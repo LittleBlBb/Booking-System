@@ -1,3 +1,17 @@
 spring:
   application:
     name: BookingSystem
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER}
+    url: jdbc:postgresql://localhost:5432/booking
+    password: ${DB_PASSWORD}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 8080
