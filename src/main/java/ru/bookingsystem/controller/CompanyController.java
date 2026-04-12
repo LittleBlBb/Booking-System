@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.entity.Company;
-import ru.bookingsystem.requests.CompanyCreateRequest;
-import ru.bookingsystem.requests.CompanyUpdateRequest;
+import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
+import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
 import java.util.List;

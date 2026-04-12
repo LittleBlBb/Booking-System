@@ -1,4 +1,4 @@
-package ru.bookingsystem.entity;
+package ru.bookingsystem.entity.constant;
 
 public enum Permission {
     ADD_RESOURCE,

@@ -1,9 +1,15 @@
 package ru.bookingsystem.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "resources")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Resource {
 
     @Id
@@ -19,4 +25,6 @@ public class Resource {
 
     @ManyToOne
     private Company company;
+
+    private Integer quantity;
 }

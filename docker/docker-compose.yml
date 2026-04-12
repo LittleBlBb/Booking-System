@@ -1,0 +1,23 @@
+services:
+  app:
+    image: 'booking-system-app:latest'
+    container_name: app
+    expose:
+      - '8080'
+    ports:
+      - '8080:8080'
+    environment:
+      - DB_USER=booking_user
+      - DB_PASSWORD=booking_password
+      - DB_URL=jdbc:postgresql://db:5432/postgres
+    depends_on:
+      - db
+  db:
+    image: 'postgres'
+    container_name: db
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=booking_user
+      - POSTGRES_PASSWORD=booking_password
+

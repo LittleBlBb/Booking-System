@@ -6,8 +6,8 @@ import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
-import ru.bookingsystem.requests.CompanyCreateRequest;
-import ru.bookingsystem.requests.CompanyUpdateRequest;
+import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
+import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
 import java.util.List;

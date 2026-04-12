@@ -1,7 +1,7 @@
-package ru.bookingsystem.requests;
+package ru.bookingsystem.DTO.requests;
 
 import lombok.Data;
-import ru.bookingsystem.entity.Role;
+import ru.bookingsystem.entity.constant.Role;
 
 @Data
 public class UserCreateRequest {

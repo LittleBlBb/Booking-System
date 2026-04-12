@@ -1,4 +1,4 @@
-package ru.bookingsystem.entity;
+package ru.bookingsystem.entity.constant;
 
 import java.util.Set;
 

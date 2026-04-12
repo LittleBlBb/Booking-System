@@ -3,6 +3,7 @@ package ru.bookingsystem.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ru.bookingsystem.entity.constant.Role;
 
 @Entity
 @Table(name = "users")

@@ -1,4 +1,4 @@
-package ru.bookingsystem.requests;
+package ru.bookingsystem.DTO.requests;
 
 import lombok.Data;
 

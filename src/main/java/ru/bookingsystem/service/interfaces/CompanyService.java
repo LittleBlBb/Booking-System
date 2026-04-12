@@ -1,8 +1,8 @@
 package ru.bookingsystem.service.interfaces;
 
 import ru.bookingsystem.entity.Company;
-import ru.bookingsystem.requests.CompanyCreateRequest;
-import ru.bookingsystem.requests.CompanyUpdateRequest;
+import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
+import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 
 import java.util.List;
 
