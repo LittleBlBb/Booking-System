@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - comment: create tables
+  - changeSet:
+      id:  create-table-companies
+      author:  LittleBlBb
+      changes:
+        - createTable:
+            tableName:  companies
+            columns:
+              - column:
+                  name:  id
+                  type:  int
+                  autoIncrement:  true
+                  constraints:
+                    primaryKey:  true
+                    nullable:  false
+              - column:
+                  name:  name
+                  type:  varchar(50)
+                  constraints:
+                    nullable:  false

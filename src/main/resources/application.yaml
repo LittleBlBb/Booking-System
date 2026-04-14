@@ -1,3 +1,7 @@
+client-id: BookingSystem
+resource-url: http://localhost:8080/realms/BookingSystem/protocol/openid-connect/token
+grant-type: password
+
 spring:
   application:
     name: BookingSystem
@@ -13,9 +17,27 @@ spring:
     hibernate:
       ddl-auto: update
 
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: BookingSystem
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/BookingSystem
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/BookingSystem
+
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
 
 server:
-  port: 8080
+  port: 8000
