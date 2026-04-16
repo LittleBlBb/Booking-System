@@ -8,5 +8,8 @@ public class UserUpdateRequest {
     private Long id;
     private Long companyId;
     private String username;
+    private String password;
+    private String email;
     private Role role;
+
 }

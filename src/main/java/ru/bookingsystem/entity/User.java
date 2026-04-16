@@ -22,10 +22,16 @@ public class User {
     @Column(unique = true)
     private String username;
 
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "email")
+    private String email;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User(Long id, Company company, String username, Role role) {
+    public User(Long id, Company company, String username, String password, Role role) {
         this.id = id;
         this.company = company;
         this.username = username;

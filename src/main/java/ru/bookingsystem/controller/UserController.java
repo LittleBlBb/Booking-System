@@ -3,7 +3,9 @@ package ru.bookingsystem.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.DTO.requests.UserCreateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
@@ -43,7 +45,7 @@ public class UserController {
             description = "creating new user by request and save to database in service"
     )
     @PostMapping("/api/users/addUser")
-    public User addUser(@RequestBody UserCreateRequest request){
+    public ResponseEntity<?> addUser(@RequestBody RegistrationUserDTO request){
 
         return userService.addUser(request);
     }
