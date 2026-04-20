@@ -6,7 +6,7 @@ public enum Permission {
     EDIT_RESOURCE,
     BOOK_RESOURCE,
     MANAGE_USER,
-    VIEW_AUDIT,
     MANAGE_ROLE,
-    MANAGE_COMPANIES
+    INVITE_USER,
+    VIEW_AUDIT
 }

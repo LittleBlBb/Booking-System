@@ -21,6 +21,27 @@ public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
 
+    private static final String[] WHITE_LIST_URL = {
+            "/api/v1/auth/**", "/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**",
+            "/swagger-resources", "/swagger-resources/**", "/configuration/ui", "/configuration/security",
+            "/swagger-ui/**", "/webjars/**", "/swagger-ui.html", "/api/auth/**", "/api/companies/all",
+            "/api/users/addUser"
+    };
+
+    private static final String[] AUTHENTICATION_REQUIRED_URL = {
+            "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
+            "/api/companies/create", "/api/me"
+    };
+
+    // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
+//    private static final String[] ONLY_ADMIN_URL = {
+//            ""
+//    };
+
+    private static final String[] ONLY_OWNER_URL = {
+            "/api/companies/editCompanyByID", "/api/companies/deleteById"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider){
 
@@ -28,9 +49,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authenticationProvider(provider)
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/auth").permitAll()
-                                .requestMatchers("/api/companies/all").hasRole("ADMIN")
-                                .anyRequest().permitAll()
+                        auth -> auth.requestMatchers(WHITE_LIST_URL).permitAll()
+//                                .requestMatchers(ONLY_ADMIN_URL).hasRole("ADMIN")
+                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
+                                .requestMatchers(AUTHENTICATION_REQUIRED_URL).authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

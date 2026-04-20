@@ -36,3 +36,6 @@ build/
 /mvnw
 /mvnw.cmd
 /.mvn
+
+### Temp ###
+src/main/resources/db.changelog

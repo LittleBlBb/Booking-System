@@ -1,48 +1,35 @@
 package ru.bookingsystem.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import ru.bookingsystem.DTO.AuthDTO;
-import ru.bookingsystem.DTO.JwtResponse;
-import ru.bookingsystem.exception.AppError;
-import ru.bookingsystem.service.interfaces.UserService;
-import ru.bookingsystem.util.JwtUtils;
+import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.requests.AuthRequest;
+import ru.bookingsystem.DTO.AuthResponse;
+import ru.bookingsystem.service.interfaces.AuthService;
 
 import java.security.Principal;
 
-@RestController
+@Tag(name = "auth_methods", description = "auth operations")
 @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api")
 public class AuthController {
 
-    private final UserService userService;
-    private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
+
+//    @PostMapping("/registration")
+//    public
 
     @PostMapping("/auth")
-    public ResponseEntity<?> auth(@RequestBody AuthDTO authDTO){
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authDTO.getLogin(), authDTO.getPassword()));
-        } catch (BadCredentialsException e) {
+    public AuthResponse auth(@RequestBody AuthRequest request){
 
-            return new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(), "Bad login or password"), HttpStatus.UNAUTHORIZED);
-        }
-
-        UserDetails userDetails = userService.loadUserByUsername(authDTO.getLogin());
-        String token = jwtUtils.generateToken(userDetails);
-
-        return ResponseEntity.ok(new JwtResponse(token));
+        return authService.login(request);
     }
 
+    @GetMapping("/me")
     public String userData(Principal principal){
 
         return principal.getName();
     }
 }
+

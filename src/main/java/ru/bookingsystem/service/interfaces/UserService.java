@@ -15,7 +15,7 @@ public interface UserService extends UserDetailsService {
 
     List<User> findAll();
 
-    ResponseEntity<?> addUser(RegistrationUserDTO request);
+    User addUser(RegistrationUserDTO request);
 
     void deleteById(Long userId);
 

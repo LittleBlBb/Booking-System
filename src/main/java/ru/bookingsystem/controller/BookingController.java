@@ -10,9 +10,11 @@ import ru.bookingsystem.entity.Booking;
 import ru.bookingsystem.service.interfaces.BookingService;
 
 import java.util.List;
+
 @Tag(name = "booking_methods", description = "operations with booking")
-@RestController()
 @AllArgsConstructor
+@RestController
+@RequestMapping("/api/bookings")
 public class BookingController {
     private final BookingService bookingService;
 
@@ -20,7 +22,7 @@ public class BookingController {
             summary = "find all bookings",
             description = "returns all bookings DTO"
     )
-    @GetMapping("/api/bookings/all")
+    @GetMapping("/all")
     public List<Booking> findAll() {
 
         return bookingService.findAll();
@@ -31,8 +33,8 @@ public class BookingController {
             description = "creating new booking by request and save to database in service"
 
     )
-    @PostMapping("/api/bookings/create")
-    public Booking addBooking(@RequestBody BookingCreateRequest request) { // Company -> Booking
+    @PostMapping("/create")
+    public Booking addBooking(@RequestBody BookingCreateRequest request) {
 
         return bookingService.addBooking(request);
     }
@@ -41,7 +43,7 @@ public class BookingController {
             summary = "find booking by id",
             description = "returns booking DTO with selected id"
     )
-    @GetMapping("/api/bookings/getById")
+    @GetMapping("/getById")
     public Booking findById(@RequestParam Long id) {
 
         return bookingService.findById(id);
@@ -51,8 +53,8 @@ public class BookingController {
             summary = "edit booking",
             description = "editing booking by id, returns new company DTO"
     )
-    @PutMapping("/api/bookings/editCompanyById")
-    public Booking editBooking(@RequestBody BookingUpdateRequest request) { // Company -> Booking
+    @PutMapping("/editBookingById")
+    public Booking editBooking(@RequestBody BookingUpdateRequest request) {
 
         return bookingService.editBooking(request);
     }
@@ -61,7 +63,7 @@ public class BookingController {
             summary = "delete booking",
             description = "deleting booking by id in service, returns void"
     )
-    @DeleteMapping("api/bookings/deleteById")
+    @DeleteMapping("/deleteById")
     public void deleteById(@RequestParam Long id) {
 
         bookingService.deleteById(id);

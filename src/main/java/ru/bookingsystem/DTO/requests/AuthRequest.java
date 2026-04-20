@@ -1,9 +1,9 @@
-package ru.bookingsystem.DTO;
+package ru.bookingsystem.DTO.requests;
 
 import lombok.Data;
 
 @Data
-public class AuthDTO {
+public class AuthRequest {
 
     private String login;
     private String password;

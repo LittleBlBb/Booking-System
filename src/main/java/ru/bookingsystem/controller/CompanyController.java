@@ -12,7 +12,8 @@ import ru.bookingsystem.service.interfaces.CompanyService;
 import java.util.List;
 
 @Tag(name = "company_methods", description = "operations with company")
-@RestController()
+@RestController
+@RequestMapping("/api/companies")
 @AllArgsConstructor
 public class CompanyController {
 
@@ -22,7 +23,7 @@ public class CompanyController {
             summary = "find all companies",
             description = "returns all companies DTO"
     )
-    @GetMapping("/api/companies/all")
+    @GetMapping("/all")
     public List<Company> findAll(){
 
         return companyService.findAll();
@@ -33,7 +34,7 @@ public class CompanyController {
             description = "creating new company by request and save to database in service"
 
     )
-    @PostMapping("/api/companies/create")
+    @PostMapping("/create")
     public Company addCompany(@RequestBody CompanyCreateRequest request){
 
         return companyService.addCompany(request);
@@ -43,7 +44,7 @@ public class CompanyController {
             summary = "find company by id",
             description = "returns company DTO with selected id"
     )
-    @GetMapping("/api/companies/getById")
+    @GetMapping("/getById")
     public Company findById(@RequestParam Long id){
 
         return companyService.findById(id);
@@ -53,7 +54,7 @@ public class CompanyController {
             summary = "edit company",
             description = "editing company by id, returns new company DTO"
     )
-    @PutMapping("/api/companies/editCompanyById")
+    @PutMapping("/editCompanyById")
     public String editCompany(@RequestBody CompanyUpdateRequest request){
 
         return companyService.editCompany(request);
@@ -63,7 +64,7 @@ public class CompanyController {
             summary = "delete company",
             description = "deleting company by id in service, returns void"
     )
-    @DeleteMapping("api/companies/deleteById")
+    @DeleteMapping("/deleteById")
     public void deleteById(@RequestParam Long id){
 
         companyService.deleteById(id);
