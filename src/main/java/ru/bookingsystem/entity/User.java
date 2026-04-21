@@ -31,6 +31,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private Boolean active;
+
+    private String activationCode;
+
     public User(Long id, Company company, String username, String password, Role role) {
         this.id = id;
         this.company = company;

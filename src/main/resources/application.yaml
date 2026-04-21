@@ -2,6 +2,9 @@ spring:
   application:
     name: BookingSystem
 
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER}
@@ -17,9 +20,23 @@ spring:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
 
+  mail:
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
-  secret: 127lg573im3179uwus1703ni228js642ca22z5a17483bf
+  secret: ${SECRET}
   lifetime: 48h
 
 server:
   port: 8080
+
+WEBAPP_LINK: ${WEBAPP_LINK}

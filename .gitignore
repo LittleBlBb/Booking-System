@@ -39,3 +39,5 @@ build/
 
 ### Temp ###
 src/main/resources/db.changelog
+
+.env*

@@ -1,10 +1,10 @@
 package ru.bookingsystem.service.interfaces;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
-import ru.bookingsystem.entity.User;
+import ru.bookingsystem.DTO.UserActivationResponse;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
+import ru.bookingsystem.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +23,5 @@ public interface UserService extends UserDetailsService {
 
     Optional<User> findByUsername(String username);
 
+    UserActivationResponse activateUser(String code);
 }

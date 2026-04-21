@@ -1,5 +1,6 @@
 package ru.bookingsystem.util;
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +10,7 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     private String username;
+    @Getter
     private String email;
     private String password;
 
@@ -19,10 +21,6 @@ public class CustomUserDetails implements UserDetails {
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     @Override
