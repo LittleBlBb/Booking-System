@@ -2,7 +2,7 @@ HELP.md
 target/
 !**/src/main/**/target/
 !**/src/test/**/target/
-docker/*.jar
+/docker/*.jar
 
 ### STS ###
 .apt_generated
