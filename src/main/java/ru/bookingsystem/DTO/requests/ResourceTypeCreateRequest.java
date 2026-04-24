@@ -3,9 +3,8 @@ package ru.bookingsystem.DTO.requests;
 import lombok.Data;
 
 @Data
-public class CompanyUpdateRequest {
+public class ResourceTypeCreateRequest {
 
-    private Long id;
-    private Long ownerId;
     private String name;
+    private Long companyId;
 }

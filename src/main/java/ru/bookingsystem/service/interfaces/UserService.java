@@ -3,6 +3,7 @@ package ru.bookingsystem.service.interfaces;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
 import ru.bookingsystem.entity.User;
 
@@ -19,9 +20,13 @@ public interface UserService extends UserDetailsService {
 
     void deleteById(Long userId);
 
-    String updateUser(UserUpdateRequest request);
+    User updateUser(UserUpdateRequest request);
 
-    Optional<User> findByUsername(String username);
+    User findByUsername(String username);
 
     UserActivationResponse activateUser(String code);
+
+    User updateRole(RoleUpdateRequest request);
+
+    User deleteUserFromCompany(Long id);
 }

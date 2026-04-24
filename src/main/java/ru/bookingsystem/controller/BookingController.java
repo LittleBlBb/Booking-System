@@ -1,6 +1,7 @@
 package ru.bookingsystem.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/bookings")
+@SecurityRequirement(name = "bearerAuth")
 public class BookingController {
     private final BookingService bookingService;
 

@@ -26,8 +26,6 @@ public enum Role {
             )),
     USER(Set.of(Permission.BOOK_RESOURCE));
 
-    @Getter
-    private String name;
 
     private final Set<Permission> permissions;
 

@@ -25,12 +25,12 @@ public class SecurityConfig {
             "/api/v1/auth/**", "/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**",
             "/swagger-resources", "/swagger-resources/**", "/configuration/ui", "/configuration/security",
             "/swagger-ui/**", "/webjars/**", "/swagger-ui.html", "/api/auth/**", "/api/companies/all",
-            "/api/users/addUser", "/api/activate/*"
+            "/api/users/addUser", "/api/activate/*", "/api/login"
     };
 
     private static final String[] AUTHENTICATION_REQUIRED_URL = {
             "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
-            "/api/companies/create", "/api/me"
+            "/api/companies/create", "/api/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}"
     };
 
     // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
@@ -39,7 +39,7 @@ public class SecurityConfig {
 //    };
 
     private static final String[] ONLY_OWNER_URL = {
-            "/api/companies/editCompanyByID", "/api/companies/deleteById"
+            "/api/companies/editCompanyById", "/api/companies/deleteById"
     };
 
     @Bean

@@ -4,23 +4,24 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
+import ru.bookingsystem.DTO.requests.UserUpdateRequest;
+import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.AlreadyExistsException;
+import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
-import ru.bookingsystem.DTO.requests.UserUpdateRequest;
 import ru.bookingsystem.service.interfaces.MailSenderService;
 import ru.bookingsystem.service.interfaces.UserService;
 import ru.bookingsystem.util.CustomUserDetails;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalStateException("Passwords are not equals");
         }
 
-        if (findByUsername(request.getUsername()).isPresent()){
+        if (findByUsername(request.getUsername()) != null){
             throw new AlreadyExistsException("User " + request.getUsername() + " already exists");
         }
 
@@ -92,36 +93,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateUser(UserUpdateRequest request){
+    public User updateUser(UserUpdateRequest request){
 
-        if (!userRepo.existsById(request.getId())){
-            return "No such row";
-        }
-        User user = new User(
-                request.getId(),
-                request.getCompanyId() != null ? companyRepo.findById(request.getCompanyId()).orElseThrow() : null,
-                request.getUsername(),
-                request.getPassword(),
-                request.getRole()
-        );
+        User user = userRepo.findById(request.getId()).orElseThrow(() ->
+                new NotFoundException("User with id " + request.getId() + " not found"));
 
-        return userRepo.save(user).toString();
+        Company company = companyRepo.findById(request.getCompanyId()).orElseThrow(() ->
+                new NotFoundException("Company with id " + request.getCompanyId() + " not found"));
+
+        user.setCompany(company);
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+
+        return userRepo.save(user);
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
+    public User findByUsername(String username) {
 
-        return userRepo.findByUsername(username);
+        return userRepo.findByUsername(username).orElseThrow(() ->new  NotFoundException("user " + username + " not found"));
     }
 
     @Override
     @Transactional
     public CustomUserDetails loadUserByUsername(String username) {
 
-        User user = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
+        User user = findByUsername(username);
 
         List<SimpleGrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().getName())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
         );
 
         return new CustomUserDetails(
@@ -145,5 +145,25 @@ public class UserServiceImpl implements UserService {
         userRepo.save(user);
 
         return new UserActivationResponse("User successfully activated");
+    }
+
+    @Override
+    public User updateRole(RoleUpdateRequest request) {
+
+        User user = userRepo.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("User with id " + request.getUserId() + " notfound"));
+
+        user.setRole(request.getRole());
+
+        return userRepo.save(user);
+    }
+
+    @Override
+    public User deleteUserFromCompany(Long id) {
+
+        User user = userRepo.findById(id).orElseThrow(() -> new NotFoundException("User with id " + id + " notfound"));
+
+        user.setCompany(null);
+
+        return userRepo.save(user);
     }
 }

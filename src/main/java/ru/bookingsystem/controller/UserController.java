@@ -1,10 +1,12 @@
 package ru.bookingsystem.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
+import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.service.interfaces.UserService;
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;
@@ -64,8 +67,20 @@ public class UserController {
             description = "editing user by id in service, returns new company DTO"
     )
     @PutMapping("/updateUser")
-    public String editUser(@RequestBody UserUpdateRequest request){
+    public User editUser(@RequestBody UserUpdateRequest request){
 
         return userService.updateUser(request);
+    }
+
+    @PutMapping("/updateUserRole")
+    public User updateRole(@RequestBody RoleUpdateRequest request){
+
+        return userService.updateRole(request);
+    }
+
+    @DeleteMapping("/deleteUserFromCompany")
+    public User deleteUserFromCompany(@RequestParam Long id){
+
+        return userService.deleteUserFromCompany(id);
     }
 }

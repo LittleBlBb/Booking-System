@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+  mail:
+    username: apdragon2014@gmail.com
+    password: rakz pkde szmu hrgv
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+jwt:
+  secret: 127lg573im3179uwus1703ni228js642ca22z5a17483bf
+  lifetime: 48h
+
+WEBAPP_LINK: http://localhost:8080

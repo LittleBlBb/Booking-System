@@ -5,6 +5,7 @@ import ru.bookingsystem.entity.constant.Role;
 
 @Data
 public class UserCreateRequest {
+
     private Long companyId;
     private String username;
     private String password;

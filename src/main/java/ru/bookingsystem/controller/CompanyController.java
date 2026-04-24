@@ -1,8 +1,10 @@
 package ru.bookingsystem.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/companies")
 @AllArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class CompanyController {
 
     private final CompanyService companyService;
@@ -35,9 +38,9 @@ public class CompanyController {
 
     )
     @PostMapping("/create")
-    public Company addCompany(@RequestBody CompanyCreateRequest request){
+    public Company addCompany(@RequestBody CompanyCreateRequest request, Authentication authentication){
 
-        return companyService.addCompany(request);
+        return companyService.addCompany(authentication, request);
     }
 
     @Operation(
@@ -55,9 +58,9 @@ public class CompanyController {
             description = "editing company by id, returns new company DTO"
     )
     @PutMapping("/editCompanyById")
-    public String editCompany(@RequestBody CompanyUpdateRequest request){
+    public Company editCompany(Authentication authentication, @RequestBody CompanyUpdateRequest request){
 
-        return companyService.editCompany(request);
+        return companyService.editCompany(authentication, request);
     }
 
     @Operation(
@@ -65,8 +68,8 @@ public class CompanyController {
             description = "deleting company by id in service, returns void"
     )
     @DeleteMapping("/deleteById")
-    public void deleteById(@RequestParam Long id){
+    public void deleteById(Authentication authentication, @RequestParam Long id){
 
-        companyService.deleteById(id);
+        companyService.deleteById(authentication, id);
     }
 }

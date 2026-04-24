@@ -1,16 +1,24 @@
 package ru.bookingsystem.service.implementation;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.User;
+import ru.bookingsystem.entity.constant.Role;
+import ru.bookingsystem.exception.AlreadyInCompanyException;
+import ru.bookingsystem.exception.NotFoundException;
+import ru.bookingsystem.exception.NotOwnerException;
 import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +28,28 @@ public class CompanyServiceImpl implements CompanyService {
     private final UserRepo userRepo;
 
     @Override
-    public Company addCompany(CompanyCreateRequest request){
+    @Transactional
+    public Company addCompany(Authentication authentication, CompanyCreateRequest request){
+
+        String name = authentication.getName();
+        User user = userRepo.findByUsername(name).orElseThrow();
+
+        if (user.getCompany() != null) throw new AlreadyInCompanyException("user with id " + user.getId() + " already in company");
+
+        Company company = createCompany(user, request.getName());
+
+        user.setRole(Role.OWNER);
+        userRepo.save(user);
+
+        return company;
+    }
+
+    private Company createCompany(User user, String companyName){
 
         Company company = new Company();
-        company.setId(null);
-        company.setName(request.getName());
+        company.setName(companyName);
+
+        user.setCompany(company);
 
         return companyRepo.save(company);
     }
@@ -42,25 +67,38 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public String editCompany(CompanyUpdateRequest request){
+    public Company editCompany(Authentication authentication, CompanyUpdateRequest request) {
 
-        if(!companyRepo.existsById(request.getId())) {
-            return "No such row";
+        companyRepo.findById(request.getId()).orElseThrow(() ->
+                new NotFoundException("company with id " + request.getId() + " not found"));
+
+        User user = userRepo.findByUsername(authentication.getName()).orElseThrow();
+
+        if (!user.getRole().equals(Role.OWNER) || !user.getCompany().getId().equals(request.getId())){
+            throw new NotOwnerException();
         }
+
         Company company = new Company(
                 request.getId(),
                 request.getName()
         );
 
-        return companyRepo.save(company).toString();
+        return companyRepo.save(company);
     }
 
     @Override
-    public void deleteById(Long id){
+    public void deleteById(Authentication authentication, Long id){
+
+        User user = userRepo.findByUsername(authentication.getName()).orElseThrow();
+
+        if (!user.getRole().equals(Role.OWNER) || !user.getCompany().getId().equals(id)){
+            throw new NotOwnerException();
+        }
 
         List<User> users = userRepo.findByCompanyId(id);
         for(User u : users){
             u.setCompany(null);
+            u.setRole(Role.USER);
         }
         userRepo.saveAll(users);
         companyRepo.deleteById(id);
