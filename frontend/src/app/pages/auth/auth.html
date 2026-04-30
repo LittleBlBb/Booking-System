@@ -1,0 +1,110 @@
+<div class="min-h-screen w-full bg-gray-50 flex items-center justify-center p-6">
+
+  <div class="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+
+    <!-- BANNER -->
+    <div class="p-4" *ngIf="banner">
+      <div
+        class="p-3 rounded-lg text-sm border"
+        [ngClass]="{
+          'bg-green-100 border-green-300 text-green-700': bannerKind === 'success',
+          'bg-red-100 border-red-300 text-red-700': bannerKind === 'error',
+          'bg-blue-100 border-blue-300 text-blue-700': bannerKind === 'info'
+        }"
+      >
+        {{ banner }}
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="p-8 pb-4 text-center">
+      <h1 class="text-2xl font-bold">Добро пожаловать</h1>
+      <p class="text-gray-500 mt-2">Быстрое бронирование ресурсов</p>
+    </div>
+
+    <!-- TABS -->
+    <div class="px-8 flex border-b">
+      <button class="flex-1 py-2"
+              [class.text-indigo-600]="mode === 'login'"
+              (click)="setMode('login')">
+        Вход
+      </button>
+
+      <button class="flex-1 py-2"
+              [class.text-indigo-600]="mode === 'register'"
+              (click)="setMode('register')">
+        Регистрация
+      </button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="p-8 space-y-4" *ngIf="mode === 'login'">
+
+      <input [(ngModel)]="loginForm.identifier"
+             placeholder="Email или username"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="loginErrors.identifier">
+        {{ loginErrors.identifier }}
+      </div>
+
+      <input [(ngModel)]="loginForm.password"
+             type="password"
+             placeholder="Пароль"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="loginErrors.password">
+        {{ loginErrors.password }}
+      </div>
+
+      <button (click)="login()"
+              class="w-full bg-indigo-600 text-white p-3 rounded-lg">
+        Войти
+      </button>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="p-8 space-y-4" *ngIf="mode === 'register'">
+
+      <input [(ngModel)]="registerForm.username"
+             placeholder="Username"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="registerErrors.username">
+        {{ registerErrors.username }}
+      </div>
+
+      <input [(ngModel)]="registerForm.email"
+             placeholder="Email"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="registerErrors.email">
+        {{ registerErrors.email }}
+      </div>
+
+      <input [(ngModel)]="registerForm.password"
+             type="password"
+             placeholder="Пароль"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="registerErrors.password">
+        {{ registerErrors.password }}
+      </div>
+
+      <input [(ngModel)]="registerForm.confirmPassword"
+             type="password"
+             placeholder="Повтор пароля"
+             class="w-full p-3 border rounded-lg"/>
+
+      <div class="text-red-500 text-sm" *ngIf="registerErrors.confirmPassword">
+        {{ registerErrors.confirmPassword }}
+      </div>
+
+      <button (click)="register()"
+              class="w-full bg-indigo-600 text-white p-3 rounded-lg">
+        Создать аккаунт
+      </button>
+    </div>
+
+  </div>
+</div>
