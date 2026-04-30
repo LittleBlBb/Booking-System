@@ -16,17 +16,23 @@ public interface UserService extends UserDetailsService {
 
     List<User> findAll();
 
-    User addUser(RegistrationUserDTO request);
-
     void deleteById(Long userId);
 
     User updateUser(UserUpdateRequest request);
 
     User findByUsername(String username);
 
+    Boolean existsByUsername(String username);
+
     UserActivationResponse activateUser(String code);
 
     User updateRole(RoleUpdateRequest request);
 
     User deleteUserFromCompany(Long id);
+
+    User save(User user);
+
+    User findByEmail(String email);
+
+    Boolean existsByEmail(String email);
 }

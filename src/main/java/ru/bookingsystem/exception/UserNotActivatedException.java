@@ -1,4 +1,9 @@
 package ru.bookingsystem.exception;
 
-public class UserNotActivatedException {
+import org.springframework.http.HttpStatus;
+
+public class UserNotActivatedException extends BusinessException {
+    public UserNotActivatedException(String message) {
+        super(message, HttpStatus.FORBIDDEN.value());
+    }
 }

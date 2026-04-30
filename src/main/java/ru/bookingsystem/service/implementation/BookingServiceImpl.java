@@ -1,5 +1,6 @@
 package ru.bookingsystem.service.implementation;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.requests.BookingCreateRequest;
@@ -23,6 +24,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepo userRepo;
     private final ResourceRepo resourceRepo;
 
+    @Transactional
     @Override
     public Booking editBooking(BookingUpdateRequest request){
 
@@ -43,6 +45,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepo.save(booking);
     }
 
+    @Transactional
     @Override
     public Booking addBooking(BookingCreateRequest request){
 

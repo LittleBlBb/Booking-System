@@ -1,11 +1,13 @@
 package ru.bookingsystem.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.AuthResponse;
+import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.DTO.UserActivationResponse;
 import ru.bookingsystem.DTO.requests.AuthRequest;
 import ru.bookingsystem.entity.User;
@@ -26,6 +28,16 @@ public class AuthController {
     public AuthResponse login(@RequestBody AuthRequest request){
 
         return authService.login(request);
+    }
+
+    @Operation(
+            summary = "add user to database",
+            description = "creating new user by request and save to database in service"
+    )
+    @PostMapping("/register")
+    public User addUser(@RequestBody RegistrationUserDTO request){
+
+        return authService.registration(request);
     }
 
     @GetMapping("/me")

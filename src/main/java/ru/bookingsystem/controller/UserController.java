@@ -43,16 +43,6 @@ public class UserController {
     }
 
     @Operation(
-            summary = "add user to database",
-            description = "creating new user by request and save to database in service"
-    )
-    @PostMapping("/addUser")
-    public User addUser(@RequestBody RegistrationUserDTO request){
-
-        return userService.addUser(request);
-    }
-
-    @Operation(
             summary = "delete user",
             description = "deleting user by id in service, returns void"
     )

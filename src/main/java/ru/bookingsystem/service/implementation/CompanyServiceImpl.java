@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
+import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
@@ -12,13 +14,9 @@ import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.exception.NotOwnerException;
 import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
-import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
-import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +65,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public Company editCompany(Authentication authentication, CompanyUpdateRequest request) {
 
         companyRepo.findById(request.getId()).orElseThrow(() ->
@@ -87,6 +86,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Authentication authentication, Long id){
 
         User user = userRepo.findByUsername(authentication.getName()).orElseThrow();
