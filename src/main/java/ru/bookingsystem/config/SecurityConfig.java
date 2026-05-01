@@ -30,17 +30,19 @@ public class SecurityConfig {
 
     private static final String[] AUTHENTICATION_REQUIRED_URL = {
             "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
-            "/api/companies/create", "/api/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}"
+            "/api/companies/create", "/api/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}",
+            "/api/company/join-request",
     };
 
     // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
-//    private static final String[] ONLY_ADMIN_URL = {
-//            ""
-//    };
-
-    private static final String[] ONLY_OWNER_URL = {
-            "/api/companies/editCompanyById", "/api/companies/deleteById"
+    private static final String[] ONLY_ADMIN_URL = {
+            "/api/requests", "/api/requests/reject", "/api/requests/approve",
     };
+
+//    private static final String[] ONLY_OWNER_URL = {
+//            "/api/companies/editCompanyById", "/api/companies/deleteById", "/company/requests", "/requests/reject",
+//            "/requests/approve",
+//    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider){
@@ -50,8 +52,8 @@ public class SecurityConfig {
                 .authenticationProvider(provider)
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(WHITE_LIST_URL).permitAll()
-//                                .requestMatchers(ONLY_ADMIN_URL).hasRole("ADMIN")
-                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
+//                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
+                                .requestMatchers(ONLY_ADMIN_URL).hasRole("ADMIN")
                                 .requestMatchers(AUTHENTICATION_REQUIRED_URL).authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)

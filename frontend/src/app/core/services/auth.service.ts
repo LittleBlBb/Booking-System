@@ -53,7 +53,6 @@ export class AuthService {
     localStorage.removeItem('user');
   }
 
-  // Новый метод для проверки авторизации
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }

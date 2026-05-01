@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Просим бэкенд всегда отвечать JSON
+
   req = req.clone({
     setHeaders: { Accept: 'application/json' }
   });
