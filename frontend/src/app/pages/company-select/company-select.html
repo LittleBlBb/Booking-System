@@ -1,5 +1,125 @@
-<h1>COMPANY SELECT</h1>
+<div class="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center p-6 gap-6">
 
-<button (click)="goDashboard()">
-  Enter Company (dashboard)
-</button>
+  <!-- BANNER -->
+  <div
+    *ngIf="banner"
+    class="w-full max-w-4xl flex items-start gap-3 px-5 py-4 text-sm rounded-xl border"
+    [ngClass]="{
+      'bg-green-50 border-green-200 text-green-800': bannerKind === 'success',
+      'bg-red-50 border-red-200 text-red-800':     bannerKind === 'error',
+      'bg-blue-50 border-blue-200 text-blue-800':  bannerKind === 'info'
+    }"
+  >
+    <span class="text-lg leading-none mt-0.5">
+      <ng-container *ngIf="bannerKind === 'success'">✅</ng-container>
+      <ng-container *ngIf="bannerKind === 'error'">❌</ng-container>
+      <ng-container *ngIf="bannerKind === 'info'">ℹ️</ng-container>
+    </span>
+    <span class="flex-1 font-medium">{{ banner }}</span>
+    <button (click)="closeBanner()" class="text-current opacity-50 hover:opacity-100 transition-opacity">✕</button>
+  </div>
+
+  <div class="w-full max-w-4xl grid md:grid-cols-2 gap-8">
+
+    <!-- СОЗДАТЬ КОМПАНИЮ -->
+    <div class="bg-white border border-gray-200 p-8 rounded-2xl shadow-sm flex flex-col items-center text-center">
+      <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-6">
+        <iconify-icon icon="lucide:plus" class="text-3xl"></iconify-icon>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Создать компанию</h2>
+      <p class="text-gray-500 mb-8">Начните с чистого листа и настройте каталог ресурсов вашей организации.</p>
+
+      <div class="w-full space-y-4">
+        <div class="text-left">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Название компании</label>
+          <input
+            [(ngModel)]="newCompanyName"
+            type="text"
+            placeholder="Например: Ромашка"
+            class="w-full px-4 py-2.5 bg-gray-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+            [class.border-red-400]="createError"
+            [class.border-gray-200]="!createError"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="createError">{{ createError }}</p>
+        </div>
+        <button
+          (click)="createCompany()"
+          class="w-full py-3 bg-indigo-600 hover:opacity-90 text-white font-semibold rounded-lg transition-opacity"
+        >
+          Запустить организацию
+        </button>
+      </div>
+    </div>
+
+    <!-- ПРИСОЕДИНИТЬСЯ -->
+    <div class="bg-white border border-gray-200 p-8 rounded-2xl shadow-sm flex flex-col items-center text-center">
+      <div class="w-16 h-16 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center mb-6">
+        <iconify-icon icon="lucide:search" class="text-3xl"></iconify-icon>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Присоединиться</h2>
+      <p class="text-gray-500 mb-8">Найдите свою компанию и запросите доступ к её общим ресурсам.</p>
+
+      <div class="w-full space-y-4">
+        <!-- Поиск -->
+        <div class="relative">
+          <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base"></iconify-icon>
+          <input
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearch()"
+            type="text"
+            placeholder="Поиск по названию..."
+            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+          />
+        </div>
+
+        <!-- Список -->
+        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+
+          <p *ngIf="filteredCompanies.length === 0" class="text-sm text-gray-400 py-4">
+            Компании не найдены
+          </p>
+
+          <div
+            *ngFor="let company of filteredCompanies"
+            class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:border-indigo-400 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <!-- Аватар из первых двух букв -->
+              <div class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded flex items-center justify-center text-xs font-bold">
+                {{ company.name.slice(0, 2).toUpperCase() }}
+              </div>
+              <p class="text-sm font-semibold text-gray-900 text-left">{{ company.name }}</p>
+            </div>
+
+            <!-- Кнопка: заявка уже отправлена -->
+            <span
+              *ngIf="pendingCompanyId === company.id"
+              class="text-xs font-semibold text-gray-400"
+            >
+              Заявка отправлена
+            </span>
+
+            <!-- Кнопка: загрузка -->
+            <span
+              *ngIf="loadingJoin === company.id"
+              class="text-xs font-semibold text-indigo-400"
+            >
+              ...
+            </span>
+
+            <!-- Кнопка: вступить -->
+            <button
+              *ngIf="pendingCompanyId !== company.id && loadingJoin !== company.id"
+              (click)="joinRequest(company)"
+              class="text-xs font-bold text-indigo-600 hover:underline"
+            >
+              Вступить
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

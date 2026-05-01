@@ -20,9 +20,15 @@ interface RegisterRequest {
   confirmPassword: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface Me {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  company: { id: number; name: string } | null;
+}
+
+@Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private apiUrl = 'http://localhost:8080/api';
@@ -30,10 +36,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(data: LoginRequest) {
-    return this.http.post<AuthResponse>(
-      `${this.apiUrl}/login`,
-      data
-    ).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data).pipe(
       tap(res => {
         localStorage.setItem('token', res.token);
         localStorage.setItem('user', JSON.stringify(res));
@@ -42,10 +45,7 @@ export class AuthService {
   }
 
   register(data: RegisterRequest) {
-    return this.http.post<any>(
-      `${this.apiUrl}/register`,
-      data
-    );
+    return this.http.post<any>(`${this.apiUrl}/register`, data);
   }
 
   logout() {
@@ -54,6 +54,11 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
+    if (typeof localStorage === 'undefined') return false;
     return !!localStorage.getItem('token');
+  }
+
+  getMe() {
+    return this.http.get<Me>(`${this.apiUrl}/me`);
   }
 }

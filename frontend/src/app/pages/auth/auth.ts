@@ -73,7 +73,7 @@ export class AuthComponent {
 
     this.banner = message;
     this.bannerKind = type;
-    this.cdr.detectChanges(); // ← добавь
+    this.cdr.detectChanges();
 
     this.bannerTimer = setTimeout(() => {
       this.banner = null;

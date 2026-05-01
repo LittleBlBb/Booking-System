@@ -3,6 +3,7 @@ package ru.bookingsystem.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -49,9 +50,12 @@ public class SecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authenticationProvider(provider)
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(WHITE_LIST_URL).permitAll()
+                        auth -> auth
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(WHITE_LIST_URL).permitAll()
 //                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
                                 .requestMatchers(ONLY_ADMIN_URL).hasRole("ADMIN")
                                 .requestMatchers(AUTHENTICATION_REQUIRED_URL).authenticated()
