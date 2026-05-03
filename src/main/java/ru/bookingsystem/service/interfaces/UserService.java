@@ -1,24 +1,24 @@
 package ru.bookingsystem.service.interfaces;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
 import ru.bookingsystem.entity.User;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
 
-    User findById(Long id);
+    UserResponseDTO findById(Long id);
 
-    List<User> findAll();
+    List<UserResponseDTO> findAll();
 
-    void deleteById(Long userId);
+    void delete(Authentication authentication);
 
-    User updateUser(UserUpdateRequest request);
+    UserResponseDTO updateUser(Authentication authentication, UserUpdateRequest request);
 
     User findByUsername(String username);
 
@@ -26,13 +26,15 @@ public interface UserService extends UserDetailsService {
 
     UserActivationResponse activateUser(String code);
 
-    User updateRole(RoleUpdateRequest request);
+    UserResponseDTO updateRole(RoleUpdateRequest request);
 
-    User deleteUserFromCompany(Long id);
+    UserResponseDTO deleteUserFromCompany(Long id);
 
-    User save(User user);
+    UserResponseDTO save(User user);
 
     User findByEmail(String email);
 
     Boolean existsByEmail(String email);
+
+    UserResponseDTO leaveCompany(Authentication authentication);
 }

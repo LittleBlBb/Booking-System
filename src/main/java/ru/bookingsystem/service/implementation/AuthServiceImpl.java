@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.AuthResponse;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.AuthRequest;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
@@ -46,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User registration(RegistrationUserDTO request){
+    public UserResponseDTO registration(RegistrationUserDTO request){
 
         if (!request.getPassword().equals(request.getConfirmPassword())){
             throw new IllegalStateException("Passwords are not equals");

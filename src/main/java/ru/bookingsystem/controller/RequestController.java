@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
 import ru.bookingsystem.entity.CompanyJoinRequest;
 import ru.bookingsystem.service.interfaces.CompanyJoinRequestService;
 
@@ -33,13 +34,13 @@ public class RequestController {
 
 
     @GetMapping("/requests")
-    public List<CompanyJoinRequest> getAllRequestsById(Authentication authentication){
+    public List<CompanyJoinRequestDTO> getAllRequestsById(Authentication authentication){
 
         return companyJoinRequestService.getAllById(authentication.getName());
     }
 
     @PostMapping("/company/join-request")
-    public CompanyJoinRequest joinRequest(Authentication authentication, @RequestParam Long id){
+    public CompanyJoinRequestDTO joinRequest(Authentication authentication, @RequestParam Long id){
 
         return companyJoinRequestService.joinRequest(authentication, id);
     }

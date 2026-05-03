@@ -25,7 +25,7 @@ export class CompanyService {
   }
 
   createCompany(name: string) {
-    return this.http.post<Company>(`${this.apiUrl}/companies`, { name });
+    return this.http.post<Company>(`${this.apiUrl}/companies/create`, { name });
   }
 
   joinRequest(companyId: number) {

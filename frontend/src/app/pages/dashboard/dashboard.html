@@ -1,5 +1,156 @@
-<h1>DASHBOARD</h1>
+<div class="min-h-screen w-full bg-gray-50 flex flex-row relative overflow-hidden">
 
-<p>Resources will be here</p>
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col shrink-0">
+    <div class="p-6 flex items-center gap-3">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <iconify-icon icon="lucide:zap" class="text-xl"></iconify-icon>
+      </div>
+      <span class="font-bold text-xl tracking-tight">{{ me?.companyName || '...' }}</span>
+    </div>
 
-<button (click)="goProfile()">Profile</button>
+    <nav class="flex-1 px-4 space-y-1 mt-4">
+      <a class="flex items-center gap-3 px-4 py-3 bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 rounded-r-lg font-medium cursor-pointer">
+        <iconify-icon icon="lucide:layout-dashboard" class="text-xl"></iconify-icon>
+        <span>Панель управления</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+        <iconify-icon icon="lucide:calendar" class="text-xl"></iconify-icon>
+        <span>Мои бронирования</span>
+      </a>
+      <a
+        *ngIf="me?.role === 'ADMIN' || me?.role === 'OWNER'"
+        class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer"
+      >
+        <iconify-icon icon="lucide:shield" class="text-xl"></iconify-icon>
+        <span>Админ-панель</span>
+      </a>
+    </nav>
+
+    <!-- USER -->
+    <div class="p-4 border-t border-white/10">
+      <div
+        (click)="goProfile()"
+        class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-all cursor-pointer"
+      >
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold">
+          {{ me?.username?.slice(0, 2)?.toUpperCase() || '?' }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold truncate">{{ me?.username || '...' }}</p>
+          <p class="text-xs text-slate-400 truncate">{{ me?.email || '' }}</p>
+        </div>
+        <iconify-icon
+          icon="lucide:log-out"
+          class="text-slate-400 hover:text-red-400 transition-colors"
+          (click)="$event.stopPropagation(); logout()"
+        ></iconify-icon>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
+      <h2 class="text-lg font-bold text-gray-900">Панель ресурсов</h2>
+      <div class="relative">
+        <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></iconify-icon>
+        <input
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearch()"
+          type="text"
+          class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400 w-64"
+          placeholder="Поиск ресурсов..."
+        />
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-8">
+
+      <!-- LOADING -->
+      <div *ngIf="loading" class="flex items-center justify-center h-64 text-gray-400">
+        <iconify-icon icon="lucide:loader" class="text-4xl animate-spin"></iconify-icon>
+      </div>
+
+      <ng-container *ngIf="!loading">
+
+        <!-- ФИЛЬТРЫ -->
+        <div class="flex items-center gap-2 mb-8 flex-wrap">
+          <button
+            class="px-4 py-2 text-sm font-semibold rounded-full transition-colors"
+            [ngClass]="selectedType === ''
+              ? 'bg-indigo-600 text-white'
+              : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'"
+            (click)="selectType('')"
+          >
+            Все ресурсы
+          </button>
+          <button
+            *ngFor="let type of allTypes"
+            class="px-4 py-2 text-sm font-medium rounded-full transition-colors"
+            [ngClass]="selectedType === type
+              ? 'bg-indigo-600 text-white'
+              : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'"
+            (click)="selectType(type)"
+          >
+            Тип {{ type }}
+          </button>
+        </div>
+
+        <!-- ПУСТО -->
+        <div *ngIf="filteredResources.length === 0" class="flex flex-col items-center justify-center h-64 text-gray-400 gap-3">
+          <iconify-icon icon="lucide:inbox" class="text-5xl"></iconify-icon>
+          <p class="text-sm">Ресурсы не найдены</p>
+        </div>
+
+        <!-- КАРТОЧКИ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div
+            *ngFor="let resource of filteredResources"
+            class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div class="flex justify-between items-start mb-4">
+              <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                <iconify-icon icon="lucide:box" class="text-2xl"></iconify-icon>
+              </div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                [ngClass]="resource.quantity > 0
+                  ? 'bg-emerald-50 text-emerald-600'
+                  : 'bg-red-50 text-red-500'"
+              >
+                <span
+                  class="w-2 h-2 rounded-full"
+                  [ngClass]="resource.quantity > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'"
+                ></span>
+                {{ resource.quantity > 0 ? 'Доступно' : 'Недоступно' }}
+              </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-900 mb-1">{{ resource.name }}</h3>
+            <p class="text-sm text-gray-500 mb-4 line-clamp-2">{{ resource.description }}</p>
+
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div class="text-sm">
+                <span class="text-gray-400">Количество:</span>
+                <span class="font-semibold text-gray-900 ml-1">{{ resource.quantity }}</span>
+              </div>
+              <button
+                class="px-6 py-2 font-bold rounded-lg transition-all"
+                [ngClass]="resource.quantity > 0
+                  ? 'bg-indigo-600 text-white hover:opacity-90'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
+                [disabled]="resource.quantity === 0"
+              >
+                {{ resource.quantity > 0 ? 'Забронировать' : 'Недоступно' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>

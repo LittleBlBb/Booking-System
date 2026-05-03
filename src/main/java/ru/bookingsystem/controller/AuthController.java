@@ -4,15 +4,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.bookingsystem.DTO.AuthResponse;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
-import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.AuthRequest;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.service.interfaces.AuthService;
-import ru.bookingsystem.service.interfaces.UserService;
 
 @Tag(name = "auth_methods", description = "auth operations")
 @RequiredArgsConstructor
@@ -22,7 +23,6 @@ import ru.bookingsystem.service.interfaces.UserService;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserService userService;
 
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request){
@@ -35,21 +35,9 @@ public class AuthController {
             description = "creating new user by request and save to database in service"
     )
     @PostMapping("/register")
-    public User addUser(@RequestBody RegistrationUserDTO request){
+    public UserResponseDTO addUser(@RequestBody RegistrationUserDTO request){
 
         return authService.registration(request);
-    }
-
-    @GetMapping("/me")
-    public User userData(Authentication authentication){
-
-        return userService.findByUsername(authentication.getName());
-    }
-
-    @GetMapping("/activate/{code}")
-    public UserActivationResponse activate(@PathVariable String code){
-
-        return userService.activateUser(code);
     }
 }
 

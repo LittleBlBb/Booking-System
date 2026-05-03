@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "companies")
 @Getter
@@ -23,6 +25,20 @@ public class Company {
         this.id = id;
         this.name = name;
     }
+
+    @OneToMany(
+            mappedBy = "company",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Resource> resources;
+
+    @OneToMany(
+            mappedBy = "company",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ResourceType> resourceTypes;
 
     @Override
     public String toString() {

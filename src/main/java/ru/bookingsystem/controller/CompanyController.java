@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.CompanyDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.entity.Company;
@@ -27,7 +28,7 @@ public class CompanyController {
             description = "returns all companies DTO"
     )
     @GetMapping("/all")
-    public List<Company> findAll(){
+    public List<CompanyDTO> findAll(){
 
         return companyService.findAll();
     }
@@ -38,7 +39,7 @@ public class CompanyController {
 
     )
     @PostMapping("/create")
-    public Company addCompany(@RequestBody CompanyCreateRequest request, Authentication authentication){
+    public CompanyDTO addCompany(@RequestBody CompanyCreateRequest request, Authentication authentication){
 
         return companyService.addCompany(authentication, request);
     }
@@ -48,9 +49,9 @@ public class CompanyController {
             description = "returns company DTO with selected id"
     )
     @GetMapping("/getById")
-    public Company findById(@RequestParam Long id){
+    public CompanyDTO findById(@RequestParam Long id){
 
-        return companyService.findById(id);
+        return new CompanyDTO(companyService.findById(id));
     }
 
     @Operation(
@@ -58,7 +59,7 @@ public class CompanyController {
             description = "editing company by id, returns new company DTO"
     )
     @PutMapping("/editCompanyById")
-    public Company editCompany(Authentication authentication, @RequestBody CompanyUpdateRequest request){
+    public CompanyDTO editCompany(Authentication authentication, @RequestBody CompanyUpdateRequest request){
 
         return companyService.editCompany(authentication, request);
     }

@@ -1,15 +1,16 @@
 package ru.bookingsystem.service.interfaces;
 
 import org.springframework.security.core.Authentication;
+import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
 import ru.bookingsystem.entity.CompanyJoinRequest;
 
 import java.util.List;
 
 public interface CompanyJoinRequestService {
 
-    List<CompanyJoinRequest> getAllById(String name);
+    List<CompanyJoinRequestDTO> getAllById(String name);
 
-    CompanyJoinRequest joinRequest(Authentication authentication, Long id);
+    CompanyJoinRequestDTO joinRequest(Authentication authentication, Long id);
 
     void approve(Authentication authentication, Long id);
 

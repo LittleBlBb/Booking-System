@@ -2,16 +2,21 @@ package ru.bookingsystem.service.implementation;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
-import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.User;
+import ru.bookingsystem.entity.constant.Role;
+import ru.bookingsystem.exception.NoPermissionException;
 import ru.bookingsystem.exception.NotFoundException;
-import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
+import ru.bookingsystem.service.interfaces.BookingService;
+import ru.bookingsystem.service.interfaces.CompanyService;
 import ru.bookingsystem.service.interfaces.UserService;
 import ru.bookingsystem.util.CustomUserDetails;
 
@@ -22,40 +27,51 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
-    private final CompanyRepo companyRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final BookingService bookingService;
+    private final CompanyService companyService;
 
     @Override
-    public User findById(Long id){
+    public UserResponseDTO findById(Long id){
 
-        return userRepo.findById(id).orElseThrow();
+        return new UserResponseDTO(userRepo.findById(id).orElseThrow());
     }
 
     @Override
-    public List<User> findAll(){
+    public List<UserResponseDTO> findAll(){
 
-        return userRepo.findAll();
+        return userRepo.findAll()
+                .stream()
+                .map(UserResponseDTO::new)
+                .toList();
     }
 
     @Override
-    public void deleteById(Long userId){
+    public void delete(Authentication authentication){
 
-        userRepo.deleteById(userId);
+        User user = findByUsername(authentication.getName());
+
+        userRepo.deleteById(user.getId());
     }
 
     @Override
-    public User updateUser(UserUpdateRequest request){
+    public UserResponseDTO updateUser(Authentication authentication, UserUpdateRequest request){
 
-        User user = userRepo.findById(request.getId()).orElseThrow(() ->
-                new NotFoundException("User with id " + request.getId() + " not found"));
+        User user = findByUsername(authentication.getName());
 
-        Company company = companyRepo.findById(request.getCompanyId()).orElseThrow(() ->
-                new NotFoundException("Company with id " + request.getCompanyId() + " not found"));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())){
+            throw new NoPermissionException("invalid password");
+        }
 
-        user.setCompany(company);
+        if (!request.getPassword().equals(request.getConfirmPassword())){
+            throw new NoPermissionException("the passwords don't match");
+        }
+
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return userRepo.save(user);
+        return new UserResponseDTO(userRepo.save(user));
     }
 
     @Override
@@ -105,28 +121,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateRole(RoleUpdateRequest request) {
+    public UserResponseDTO updateRole(RoleUpdateRequest request) {
 
-        User user = userRepo.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("User with id " + request.getUserId() + " notfound"));
+        User user = userRepo.findById(request.getUserId()).orElseThrow(() ->
+                new NotFoundException("User with id " + request.getUserId() + " notfound"));
 
         user.setRole(request.getRole());
 
-        return userRepo.save(user);
+        return new UserResponseDTO(userRepo.save(user));
     }
 
     @Override
-    public User deleteUserFromCompany(Long id) {
+    public UserResponseDTO deleteUserFromCompany(Long id) {
 
-        User user = userRepo.findById(id).orElseThrow(() -> new NotFoundException("User with id " + id + " notfound"));
+        User user = userRepo.findById(id).orElseThrow(() ->
+                new NotFoundException("User with id " + id + " notfound"));
 
         user.setCompany(null);
 
-        return userRepo.save(user);
+        return new UserResponseDTO(userRepo.save(user));
     }
 
     @Override
-    public User save(User user) {
-        return userRepo.save(user);
+    public UserResponseDTO save(User user) {
+        return new UserResponseDTO(userRepo.save(user));
     }
 
     @Override
@@ -139,5 +157,34 @@ public class UserServiceImpl implements UserService {
     public Boolean existsByEmail(String email){
 
         return userRepo.existsByEmail(email);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO leaveCompany(Authentication authentication) {
+
+        User user = findByUsername(authentication.getName());
+
+        if (user.getRole().equals(Role.OWNER)){
+            User admin = userRepo.findFirstByCompanyIdAndRole(user.getCompany().getId(), Role.ADMIN);
+
+            if (admin == null) {
+                admin = userRepo.findFirstByCompanyIdAndRole(user.getCompany().getId(), Role.USER);
+            }
+
+            if (admin == null) {
+                companyService.deleteById(authentication, user.getCompany().getId());
+            } else {
+                admin.setRole(Role.OWNER);
+                userRepo.save(admin);
+            }
+        }
+
+        user.setRole(Role.USER);
+        user.setCompany(null);
+
+        bookingService.cancelAllBookingsByUserId(user.getId());
+
+        return new UserResponseDTO(userRepo.save(user));
     }
 }

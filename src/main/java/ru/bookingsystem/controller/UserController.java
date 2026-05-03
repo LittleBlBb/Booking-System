@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import ru.bookingsystem.DTO.RegistrationUserDTO;
+import ru.bookingsystem.DTO.UserActivationResponse;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
 import ru.bookingsystem.entity.User;
@@ -27,7 +29,7 @@ public class UserController {
             description = "returns user DTO with selected id"
     )
     @GetMapping("/getById")
-    public User getUserById(@RequestParam Long userId){
+    public UserResponseDTO getUserById(@RequestParam Long userId){
 
         return userService.findById(userId);
     }
@@ -37,7 +39,7 @@ public class UserController {
             description = "returns all users DTO"
     )
     @GetMapping("/all")
-    public List<User> findAll(){
+    public List<UserResponseDTO> findAll(){
 
         return userService.findAll();
     }
@@ -46,10 +48,10 @@ public class UserController {
             summary = "delete user",
             description = "deleting user by id in service, returns void"
     )
-    @DeleteMapping("/deleteById")
-    public void deleteUser(@RequestParam Long userId){
+    @DeleteMapping("/delete")
+    public void deleteUser(Authentication authentication){
 
-        userService.deleteById(userId);
+        userService.delete(authentication);
     }
 
     @Operation(
@@ -57,20 +59,38 @@ public class UserController {
             description = "editing user by id in service, returns new company DTO"
     )
     @PutMapping("/updateUser")
-    public User editUser(@RequestBody UserUpdateRequest request){
+    public UserResponseDTO editUser(Authentication authentication, @RequestBody UserUpdateRequest request){
 
-        return userService.updateUser(request);
+        return userService.updateUser(authentication, request);
     }
 
     @PutMapping("/updateUserRole")
-    public User updateRole(@RequestBody RoleUpdateRequest request){
+    public UserResponseDTO updateRole(@RequestBody RoleUpdateRequest request){
 
         return userService.updateRole(request);
     }
 
     @DeleteMapping("/deleteUserFromCompany")
-    public User deleteUserFromCompany(@RequestParam Long id){
+    public UserResponseDTO deleteUserFromCompany(@RequestParam Long id){
 
         return userService.deleteUserFromCompany(id);
+    }
+
+    @DeleteMapping("/leave")
+    public UserResponseDTO leaveCompany(Authentication authentication){
+
+        return userService.leaveCompany(authentication);
+    }
+
+    @GetMapping("/activate/{code}")
+    public UserActivationResponse activate(@PathVariable String code){
+
+        return userService.activateUser(code);
+    }
+
+    @GetMapping("/me")
+    public UserResponseDTO userData(Authentication authentication){
+
+        return new UserResponseDTO(userService.findByUsername(authentication.getName()));
     }
 }

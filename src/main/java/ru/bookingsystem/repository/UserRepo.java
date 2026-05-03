@@ -3,6 +3,7 @@ package ru.bookingsystem.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.bookingsystem.entity.User;
+import ru.bookingsystem.entity.constant.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,4 +22,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Boolean existsByUsername(String username);
 
     Boolean existsByEmail(String email);
+
+    User findFirstByCompanyIdAndRole(Long id, Role role);
+
+    User findFirstByCompanyId(Long id);
 }

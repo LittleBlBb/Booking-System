@@ -1,35 +1,28 @@
 package ru.bookingsystem.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.bookingsystem.entity.constant.RequestStatus;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "invite_link")
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "company_join_request")
-public class CompanyJoinRequest {
+public class InviteLink {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private String token;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @Enumerated(EnumType.STRING)
-    private RequestStatus status;
-
-    private LocalDateTime createdAt;
+    private LocalDateTime expiresAt;
 }

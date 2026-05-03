@@ -8,6 +8,7 @@ import ru.bookingsystem.DTO.requests.BookingUpdateRequest;
 import ru.bookingsystem.entity.Booking;
 import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
+import ru.bookingsystem.entity.constant.BookingStatus;
 import ru.bookingsystem.repository.BookingRepo;
 import ru.bookingsystem.repository.ResourceRepo;
 import ru.bookingsystem.repository.UserRepo;
@@ -77,6 +78,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<Booking> findAllByStatusAndUserId(BookingStatus status, Long userId){
+
+        return bookingRepo.findAllByStatusAndUserId(status, userId);
+    }
+
+    @Override
     public void deleteById(Long id){
 
         bookingRepo.deleteById(id);
@@ -102,5 +109,17 @@ public class BookingServiceImpl implements BookingService {
         if (countOverlapping >= resource.getQuantity()){
             throw new IllegalStateException("Resource is fully booked for this time");
         }
+    }
+
+    @Override
+    public void cancelAllBookingsByUserId(Long userId){
+
+        List<Booking> bookings = findAllByStatusAndUserId(BookingStatus.ACTIVE, userId);
+
+        for (Booking booking : bookings) {
+            booking.setStatus(BookingStatus.CANCELED);
+        }
+
+        bookingRepo.saveAll(bookings);
     }
 }

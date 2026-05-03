@@ -25,7 +25,8 @@ export interface Me {
   username: string;
   email: string;
   role: string;
-  company: { id: number; name: string } | null;
+  companyId: number | null;
+  companyName: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -59,6 +60,6 @@ export class AuthService {
   }
 
   getMe() {
-    return this.http.get<Me>(`${this.apiUrl}/me`);
+    return this.http.get<Me>(`${this.apiUrl}/users/me`);
   }
 }

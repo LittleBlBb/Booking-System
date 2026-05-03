@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.CompanyJoinRequest;
 import ru.bookingsystem.entity.User;
@@ -16,7 +17,6 @@ import ru.bookingsystem.repository.CompanyJoinRequestRepo;
 import ru.bookingsystem.repository.CompanyRepo;
 import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.service.interfaces.CompanyJoinRequestService;
-import ru.bookingsystem.service.interfaces.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,7 +30,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
     private final CompanyRepo companyRepo;
 
     @Override
-    public List<CompanyJoinRequest> getAllById(String name) {
+    public List<CompanyJoinRequestDTO> getAllById(String name) {
 
         User user = userRepo.findByUsername(name).orElseThrow(() ->
                 new NotFoundException("User " + name + " not found"));
@@ -42,12 +42,15 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         Company company = companyRepo.findById(user.getCompany().getId()).orElseThrow(() ->
                 new NotFoundException("Company with id " + user.getCompany().getId() + " not found"));
 
-        return companyJoinRequestRepo.findAllByCompany(company);
+        return companyJoinRequestRepo.findAllByCompany(company)
+                .stream()
+                .map(CompanyJoinRequestDTO::new)
+                .toList();
     }
 
     @Override
     @Transactional
-    public CompanyJoinRequest joinRequest(Authentication authentication, Long id) {
+    public CompanyJoinRequestDTO joinRequest(Authentication authentication, Long id) {
 
         User user = userRepo.findByUsername(authentication.getName()).orElseThrow(() ->
                 new NotFoundException("User " + authentication.getName() + " not found"));
@@ -70,7 +73,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         request.setStatus(RequestStatus.PENDING);
         request.setCreatedAt(LocalDateTime.now());
 
-        return companyJoinRequestRepo.save(request);
+        return new CompanyJoinRequestDTO(companyJoinRequestRepo.save(request));
     }
 
     @Override

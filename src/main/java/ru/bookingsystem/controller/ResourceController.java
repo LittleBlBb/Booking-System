@@ -3,6 +3,7 @@ package ru.bookingsystem.controller;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.ResourceDTO;
 import ru.bookingsystem.DTO.requests.ResourceCreateRequest;
 import ru.bookingsystem.DTO.requests.ResourceUpdateRequest;
 import ru.bookingsystem.entity.Resource;
@@ -18,25 +19,25 @@ public class ResourceController {
     private final ResourceService resourceService;
 
     @PostMapping("/addResource")
-    public Resource addResource(@RequestParam ResourceCreateRequest request){
+    public ResourceDTO addResource(@RequestBody ResourceCreateRequest request){
 
         return resourceService.addResource(request);
     }
 
     @GetMapping("/findResourceById")
-    public Resource findById(@RequestParam Long id){
+    public ResourceDTO findById(@RequestParam Long id){
 
         return resourceService.findById(id);
     }
 
     @GetMapping("/findAll")
-    public List<Resource> findAll(){
+    public List<ResourceDTO> findAll(){
 
         return resourceService.findAll();
     }
 
     @GetMapping("/findAll/{companyId}")
-    public List<Resource> findAllByCompanyId(@RequestParam Long companyId){
+    public List<ResourceDTO> findAllByCompanyId(@RequestParam Long companyId){
 
         return resourceService.findAllByCompanyId(companyId);
     }
@@ -48,7 +49,7 @@ public class ResourceController {
     }
 
     @PutMapping("/editResource")
-    public Resource editResource(@RequestBody ResourceUpdateRequest request){
+    public ResourceDTO editResource(@RequestBody ResourceUpdateRequest request){
 
         return resourceService.editResource(request);
     }

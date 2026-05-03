@@ -1,14 +1,18 @@
 package ru.bookingsystem.service.interfaces;
 
+import ru.bookingsystem.DTO.ResourceTypeDTO;
 import ru.bookingsystem.DTO.requests.ResourceTypeCreateRequest;
-import ru.bookingsystem.entity.ResourceType;
 
 import java.util.List;
 
 public interface ResourceTypeService {
-    ResourceType findById(Long id);
+    ResourceTypeDTO findById(Long id);
 
-    List<ResourceType> findAll();
+    List<ResourceTypeDTO> findAll();
 
-    ResourceType addResourceType(ResourceTypeCreateRequest request);
+    ResourceTypeDTO addResourceType(ResourceTypeCreateRequest request);
+
+    List<ResourceTypeDTO> findAllByCompanyId(Long id);
+
+    void deleteById(Long id);
 }

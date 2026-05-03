@@ -3,6 +3,7 @@ package ru.bookingsystem.controller;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.ResourceTypeDTO;
 import ru.bookingsystem.DTO.requests.ResourceTypeCreateRequest;
 import ru.bookingsystem.entity.ResourceType;
 import ru.bookingsystem.service.interfaces.ResourceTypeService;
@@ -18,19 +19,19 @@ public class ResourceTypeController {
     private final ResourceTypeService resourceTypeService;
 
     @PostMapping("/addResourceType")
-    public ResourceType addResourceType(@RequestBody ResourceTypeCreateRequest request){
+    public ResourceTypeDTO addResourceType(@RequestBody ResourceTypeCreateRequest request){
 
         return resourceTypeService.addResourceType(request);
     }
 
     @GetMapping("/findResourceTypeById")
-    public ResourceType findById(@RequestParam Long id){
+    public ResourceTypeDTO findById(@RequestParam Long id){
 
         return resourceTypeService.findById(id);
     }
 
     @GetMapping("/findAll")
-    public List<ResourceType> findAll(){
+    public List<ResourceTypeDTO> findAll(){
 
         return resourceTypeService.findAll();
     }

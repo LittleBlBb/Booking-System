@@ -26,23 +26,25 @@ public class SecurityConfig {
             "/api/v1/auth/**", "/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**",
             "/swagger-resources", "/swagger-resources/**", "/configuration/ui", "/configuration/security",
             "/swagger-ui/**", "/webjars/**", "/swagger-ui.html", "/api/auth/**", "/api/companies/all",
-            "/api/register", "/api/activate/*", "/api/login"
+            "/api/register", "/api/users/activate/*", "/api/login",
     };
 
     private static final String[] AUTHENTICATION_REQUIRED_URL = {
             "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
-            "/api/companies/create", "/api/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}",
-            "/api/company/join-request",
+            "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}",
+            "/api/company/join-request", "/api/users/updateUser", "/api/users/delete", "/api/users/leave",
+            
     };
 
     // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
     private static final String[] ONLY_ADMIN_URL = {
-            "/api/requests", "/api/requests/reject", "/api/requests/approve",
+            "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
+            "/api/resources/addResource",
     };
 
 //    private static final String[] ONLY_OWNER_URL = {
-//            "/api/companies/editCompanyById", "/api/companies/deleteById", "/company/requests", "/requests/reject",
-//            "/requests/approve",
+//            "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
+//            "/api/resources/addResource",
 //    };
 
     @Bean

@@ -1,5 +1,6 @@
 package ru.bookingsystem.service.interfaces;
 
+import ru.bookingsystem.DTO.ResourceDTO;
 import ru.bookingsystem.DTO.requests.ResourceCreateRequest;
 import ru.bookingsystem.DTO.requests.ResourceUpdateRequest;
 import ru.bookingsystem.entity.Resource;
@@ -7,15 +8,15 @@ import ru.bookingsystem.entity.Resource;
 import java.util.List;
 
 public interface ResourceService {
-    Resource addResource(ResourceCreateRequest request);
+    ResourceDTO addResource(ResourceCreateRequest request);
 
-    Resource findById(Long id);
+    ResourceDTO findById(Long id);
 
-    List<Resource> findAll();
+    List<ResourceDTO> findAll();
 
     void deleteById(Long id);
 
-    Resource editResource(ResourceUpdateRequest request);
+    ResourceDTO editResource(ResourceUpdateRequest request);
 
-    List<Resource> findAllByCompanyId(Long companyId);
+    List<ResourceDTO> findAllByCompanyId(Long companyId);
 }

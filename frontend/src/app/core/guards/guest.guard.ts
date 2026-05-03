@@ -12,7 +12,7 @@ export const guestGuard: CanActivateFn = () => {
 
   return auth.getMe().pipe(
     map(me => {
-      if (me.company) {
+      if (me.companyId) {
         return router.parseUrl('/dashboard');
       } else {
         return router.parseUrl('/company-select');
