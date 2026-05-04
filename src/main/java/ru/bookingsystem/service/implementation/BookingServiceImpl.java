@@ -13,6 +13,7 @@ import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.BookingStatus;
 import ru.bookingsystem.entity.constant.Role;
+import ru.bookingsystem.exception.BookingException;
 import ru.bookingsystem.exception.NoPermissionException;
 import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.repository.BookingRepo;
@@ -118,21 +119,21 @@ public class BookingServiceImpl implements BookingService {
 
         if (user.getCompany() == null ||
                 !user.getCompany().equals(resource.getCompany())) {
-            throw new IllegalArgumentException("User and resource must belong to same company");
+            throw new NoPermissionException("User and resource must belong to same company");
         }
 
         if (start.isAfter(end)){
-            throw new IllegalArgumentException("Invalid time interval");
+            throw new BookingException("Invalid time interval");
         }
 
         if (start.isBefore(LocalDateTime.now())){
-            throw new IllegalArgumentException("Cannot book in the past");
+            throw new BookingException("Cannot book in the past");
         }
 
         long countOverlapping = bookingRepo.countOverlappingBookings(resource, start, end);
 
         if (countOverlapping >= resource.getQuantity()){
-            throw new IllegalStateException("Resource is fully booked for this time");
+            throw new BookingException("Resource is fully booked for this time");
         }
 
         CompanySettings settings = resource.getCompany().getSettings();
@@ -144,19 +145,19 @@ public class BookingServiceImpl implements BookingService {
 
             if (startTime.isBefore(settings.getWorkStart()) ||
                     endTime.isAfter(settings.getWorkEnd())) {
-                throw new IllegalStateException("Booking outside working hours");
+                throw new BookingException("Booking outside working hours");
             }
 
             long minutes = Duration.between(start, end).toMinutes();
 
             if (minutes > settings.getMaxBookingDurationMinutes()) {
-                throw new IllegalStateException("Booking duration exceeded");
+                throw new BookingException("Booking duration exceeded");
             }
 
             long bookingCount = bookingRepo.countUserBookingsInInterval(user, start, end);
 
             if (bookingCount >= settings.getMaxBookingsPerUser()) {
-                throw new IllegalStateException("Too many bookings for this time");
+                throw new BookingException("Too many bookings for this time");
             }
         }
     }
@@ -186,6 +187,23 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDTO> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status) {
 
         return bookingRepo.findAllByResourceIdAndStatus(resourceId, status)
+                .stream()
+                .map(BookingDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<BookingDTO> findAllByCompanyId(Long companyId){
+
+        return bookingRepo.findAllByCompanyId(companyId)
+                .stream()
+                .map(BookingDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<BookingDTO> findAllByCompanyIdAndStatus(Long companyId, BookingStatus status) {
+        return bookingRepo.findAllByCompanyIdAndStatus(companyId, status)
                 .stream()
                 .map(BookingDTO::new)
                 .toList();

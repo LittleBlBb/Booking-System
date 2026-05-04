@@ -3,7 +3,6 @@ package ru.bookingsystem.service.interfaces;
 import ru.bookingsystem.DTO.ResourceDTO;
 import ru.bookingsystem.DTO.requests.ResourceCreateRequest;
 import ru.bookingsystem.DTO.requests.ResourceUpdateRequest;
-import ru.bookingsystem.entity.Resource;
 
 import java.util.List;
 

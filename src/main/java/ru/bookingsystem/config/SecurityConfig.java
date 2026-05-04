@@ -31,9 +31,9 @@ public class SecurityConfig {
 
     private static final String[] AUTHENTICATION_REQUIRED_URL = {
             "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
-            "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}",
+            "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/{companyId}/findAll/",
             "/api/company/join-request", "/api/users/updateUser", "/api/users/delete", "/api/users/leave",
-            "/api/company_settings/getCompanySettings", "/api/bookings/{resourceId}/bookings"
+            "/api/company_settings/getCompanySettings", "/api/bookings/{resourceId}/bookings", "/api/bookings/{companyId}/all",
             
     };
 

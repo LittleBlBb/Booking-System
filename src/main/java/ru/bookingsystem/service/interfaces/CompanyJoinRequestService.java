@@ -2,7 +2,6 @@ package ru.bookingsystem.service.interfaces;
 
 import org.springframework.security.core.Authentication;
 import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
-import ru.bookingsystem.entity.CompanyJoinRequest;
 
 import java.util.List;
 

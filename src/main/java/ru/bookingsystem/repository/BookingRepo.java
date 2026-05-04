@@ -1,9 +1,9 @@
 package ru.bookingsystem.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.entity.Booking;
 import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
@@ -48,4 +48,31 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     List<Booking> findAllByResourceId(Long resourceId);
 
     List<Booking> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status);
+
+    @Modifying
+    @Query("""
+        UPDATE Booking b
+        SET b.status = 'EXPIRED'
+        WHERE b.status = 'ACTIVE'
+            AND b.endTime < :now
+""")
+    void expiredOldBookings(@Param("now") LocalDateTime now);
+
+    @Query("""
+        SELECT b
+        FROM Booking b
+        JOIN b.resource r
+        WHERE r.company.id = :companyId
+            AND b.status = :status
+""")
+    List<Booking> findAllByCompanyIdAndStatus(@Param("companyId") Long companyId,
+                               @Param("status") BookingStatus status);
+
+    @Query("""
+        SELECT b
+        FROM Booking b
+        JOIN b.resource r
+        WHERE r.company.id = :companyId
+""")
+    List<Booking> findAllByCompanyId(Long companyId);
 }

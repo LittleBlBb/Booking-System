@@ -27,4 +27,8 @@ public interface BookingService {
     List<BookingDTO> findAllByResourceId(Long resourceId);
 
     List<BookingDTO> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status);
+
+    List<BookingDTO> findAllByCompanyId(Long companyId);
+
+    List<BookingDTO> findAllByCompanyIdAndStatus(Long companyId, BookingStatus status);
 }

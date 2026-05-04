@@ -35,8 +35,8 @@ public class ResourceController {
         return resourceService.findAll();
     }
 
-    @GetMapping("/findAll/{companyId}")
-    public List<ResourceDTO> findAllByCompanyId(@RequestParam Long companyId){
+    @GetMapping("/{companyId}/findAll/")
+    public List<ResourceDTO> findAllByCompanyId(@PathVariable Long companyId){
 
         return resourceService.findAllByCompanyId(companyId);
     }

@@ -80,4 +80,13 @@ public class BookingController {
                 ? bookingService.findAllByResourceId(resourceId)
                 : bookingService.findAllByResourceIdAndStatus(resourceId, status);
     }
+
+    @GetMapping("/{companyId}/all")
+    public List<BookingDTO> findAllByCompanyId(@PathVariable Long companyId,
+                                               @RequestParam(required = false) BookingStatus status){
+
+        return status == null
+                ? bookingService.findAllByCompanyId(companyId)
+                : bookingService.findAllByCompanyIdAndStatus(companyId, status);
+    }
 }

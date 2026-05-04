@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.ResourceTypeDTO;
 import ru.bookingsystem.DTO.requests.ResourceTypeCreateRequest;
-import ru.bookingsystem.entity.ResourceType;
 import ru.bookingsystem.service.interfaces.ResourceTypeService;
 
 import java.util.List;

@@ -15,7 +15,6 @@ import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.NoPermissionException;
 import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.repository.UserRepo;
-import ru.bookingsystem.service.interfaces.BookingService;
 import ru.bookingsystem.service.interfaces.CompanyService;
 import ru.bookingsystem.service.interfaces.UserService;
 import ru.bookingsystem.util.CustomUserDetails;

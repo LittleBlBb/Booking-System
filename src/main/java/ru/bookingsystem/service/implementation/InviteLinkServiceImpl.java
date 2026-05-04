@@ -3,15 +3,14 @@ package ru.bookingsystem.service.implementation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.bookingsystem.DTO.CompanyDTO;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.entity.InviteLink;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.NoPermissionException;
+import ru.bookingsystem.repository.InviteLinkRepo;
 import ru.bookingsystem.service.interfaces.CompanyService;
 import ru.bookingsystem.service.interfaces.InviteLinkService;
-import ru.bookingsystem.repository.InviteLinkRepo;
 import ru.bookingsystem.service.interfaces.UserService;
 
 import java.time.LocalDateTime;

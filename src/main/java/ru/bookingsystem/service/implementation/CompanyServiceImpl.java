@@ -7,18 +7,15 @@ import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.CompanyDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
-import ru.bookingsystem.entity.*;
+import ru.bookingsystem.entity.Company;
+import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.AlreadyInCompanyException;
 import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.exception.NotOwnerException;
-import ru.bookingsystem.repository.BookingRepo;
 import ru.bookingsystem.repository.CompanyRepo;
-import ru.bookingsystem.repository.ResourceRepo;
 import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.service.interfaces.CompanyService;
-import ru.bookingsystem.service.interfaces.ResourceService;
-import ru.bookingsystem.service.interfaces.ResourceTypeService;
 
 import java.util.List;
 

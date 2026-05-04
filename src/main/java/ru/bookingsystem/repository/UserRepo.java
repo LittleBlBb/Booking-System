@@ -24,6 +24,4 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Boolean existsByEmail(String email);
 
     User findFirstByCompanyIdAndRole(Long id, Role role);
-
-    User findFirstByCompanyId(Long id);
 }
