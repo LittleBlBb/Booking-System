@@ -11,7 +11,7 @@ import ru.bookingsystem.service.interfaces.ResourceTypeService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/resource_types/")
+@RequestMapping("/api/resource_types")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class ResourceTypeController {

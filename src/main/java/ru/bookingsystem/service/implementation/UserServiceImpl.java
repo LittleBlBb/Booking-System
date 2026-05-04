@@ -28,8 +28,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final BookingService bookingService;
     private final CompanyService companyService;
+    private final UserCleanupService userCleanupService;
 
     @Override
     public UserResponseDTO findById(Long id){
@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(Role.USER);
         user.setCompany(null);
 
-        bookingService.cancelAllBookingsByUserId(user.getId());
+        userCleanupService.handleUserLeaving(user.getId());
 
         return new UserResponseDTO(userRepo.save(user));
     }

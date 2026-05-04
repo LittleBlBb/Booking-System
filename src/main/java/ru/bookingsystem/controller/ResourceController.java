@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.ResourceDTO;
 import ru.bookingsystem.DTO.requests.ResourceCreateRequest;
 import ru.bookingsystem.DTO.requests.ResourceUpdateRequest;
-import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.service.interfaces.ResourceService;
 
 import java.util.List;

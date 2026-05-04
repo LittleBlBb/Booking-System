@@ -1,5 +1,7 @@
 package ru.bookingsystem.service.interfaces;
 
+import org.springframework.security.core.Authentication;
+import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.DTO.requests.BookingCreateRequest;
 import ru.bookingsystem.DTO.requests.BookingUpdateRequest;
 import ru.bookingsystem.entity.Booking;
@@ -8,17 +10,21 @@ import ru.bookingsystem.entity.constant.BookingStatus;
 import java.util.List;
 
 public interface BookingService {
-    Booking editBooking(BookingUpdateRequest request);
+    BookingDTO editBooking(Authentication authentication, BookingUpdateRequest request);
 
-    Booking addBooking(BookingCreateRequest request);
+    BookingDTO addBooking(Authentication authentication, BookingCreateRequest request);
 
-    Booking findById(Long id);
+    BookingDTO findById(Long id);
 
-    List<Booking> findAll();
+    List<BookingDTO> findAll();
 
     List<Booking> findAllByStatusAndUserId(BookingStatus status, Long userId);
 
-    void deleteById(Long id);
+    void deleteById(Authentication authentication, Long id);
 
     void cancelAllBookingsByUserId(Long userId);
+
+    List<BookingDTO> findAllByResourceId(Long resourceId);
+
+    List<BookingDTO> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status);
 }

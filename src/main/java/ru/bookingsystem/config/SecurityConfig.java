@@ -33,13 +33,14 @@ public class SecurityConfig {
             "/api/bookings/editBookingById", "/api/bookings/create", "/api/bookings/getById", "/api/bookings/all",
             "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/findAll/{companyId}",
             "/api/company/join-request", "/api/users/updateUser", "/api/users/delete", "/api/users/leave",
+            "/api/company_settings/getCompanySettings", "/api/bookings/{resourceId}/bookings"
             
     };
 
     // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
     private static final String[] ONLY_ADMIN_URL = {
             "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
-            "/api/resources/addResource",
+            "/api/resources/addResource", "/api/company_settings/setSettings",
     };
 
 //    private static final String[] ONLY_OWNER_URL = {

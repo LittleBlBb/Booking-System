@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
-import ru.bookingsystem.entity.CompanyJoinRequest;
 import ru.bookingsystem.service.interfaces.CompanyJoinRequestService;
 
 import java.util.List;

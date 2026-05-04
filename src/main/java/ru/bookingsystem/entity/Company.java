@@ -40,6 +40,13 @@ public class Company {
     )
     private List<ResourceType> resourceTypes;
 
+    @OneToOne(
+            mappedBy = "company",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private CompanySettings settings;
+
     @Override
     public String toString() {
         return "Company{" +

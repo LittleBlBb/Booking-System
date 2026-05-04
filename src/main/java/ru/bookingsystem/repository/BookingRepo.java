@@ -3,11 +3,14 @@ package ru.bookingsystem.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.entity.Booking;
 import ru.bookingsystem.entity.Resource;
+import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.BookingStatus;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public interface BookingRepo extends JpaRepository<Booking, Long> {
@@ -27,4 +30,22 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
             );
 
     List<Booking> findAllByStatusAndUserId(BookingStatus bookingStatus, Long userId);
+
+    @Query("""
+        SELECT COUNT(b)
+        FROM Booking b
+        WHERE b.user = :user
+            AND b.status = 'ACTIVE'
+            AND b.startTime  < :endTime
+            AND b.endTime > :startTime
+
+""")
+    long countUserBookingsInInterval(
+            @Param("user") User user,
+            @Param("startTime") LocalDateTime start,
+            @Param("endTime") LocalDateTime end);
+
+    List<Booking> findAllByResourceId(Long resourceId);
+
+    List<Booking> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status);
 }

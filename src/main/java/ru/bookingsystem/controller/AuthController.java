@@ -12,7 +12,6 @@ import ru.bookingsystem.DTO.AuthResponse;
 import ru.bookingsystem.DTO.RegistrationUserDTO;
 import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.AuthRequest;
-import ru.bookingsystem.entity.User;
 import ru.bookingsystem.service.interfaces.AuthService;
 
 @Tag(name = "auth_methods", description = "auth operations")

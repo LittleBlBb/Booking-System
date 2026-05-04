@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 public class BookingUpdateRequest {
 
     private Long bookingId;
-    private Long userId;
     private Long resourceId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

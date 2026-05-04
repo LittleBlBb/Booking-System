@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.DTO.requests.BookingCreateRequest;
 import ru.bookingsystem.DTO.requests.BookingUpdateRequest;
-import ru.bookingsystem.entity.Booking;
+import ru.bookingsystem.entity.constant.BookingStatus;
 import ru.bookingsystem.service.interfaces.BookingService;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public class BookingController {
             description = "returns all bookings DTO"
     )
     @GetMapping("/all")
-    public List<Booking> findAll() {
+    public List<BookingDTO> findAll() {
 
         return bookingService.findAll();
     }
@@ -36,9 +38,9 @@ public class BookingController {
 
     )
     @PostMapping("/create")
-    public Booking addBooking(@RequestBody BookingCreateRequest request) {
+    public BookingDTO addBooking(Authentication authentication, @RequestBody BookingCreateRequest request) {
 
-        return bookingService.addBooking(request);
+        return bookingService.addBooking(authentication, request);
     }
 
     @Operation(
@@ -46,7 +48,7 @@ public class BookingController {
             description = "returns booking DTO with selected id"
     )
     @GetMapping("/getById")
-    public Booking findById(@RequestParam Long id) {
+    public BookingDTO findById(@RequestParam Long id) {
 
         return bookingService.findById(id);
     }
@@ -56,9 +58,9 @@ public class BookingController {
             description = "editing booking by id, returns new company DTO"
     )
     @PutMapping("/editBookingById")
-    public Booking editBooking(@RequestBody BookingUpdateRequest request) {
+    public BookingDTO editBooking(Authentication authentication, @RequestBody BookingUpdateRequest request) {
 
-        return bookingService.editBooking(request);
+        return bookingService.editBooking(authentication, request);
     }
 
     @Operation(
@@ -66,8 +68,16 @@ public class BookingController {
             description = "deleting booking by id in service, returns void"
     )
     @DeleteMapping("/deleteById")
-    public void deleteById(@RequestParam Long id) {
+    public void deleteById(Authentication authentication, @RequestParam Long id) {
 
-        bookingService.deleteById(id);
+        bookingService.deleteById(authentication, id);
+    }
+
+    @GetMapping("/{resourceId}/bookings")
+    public List<BookingDTO> findAllByResourceId(@PathVariable Long resourceId,
+                                                @RequestParam(required = false) BookingStatus status){
+        return status == null
+                ? bookingService.findAllByResourceId(resourceId)
+                : bookingService.findAllByResourceIdAndStatus(resourceId, status);
     }
 }

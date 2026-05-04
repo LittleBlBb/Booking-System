@@ -10,7 +10,6 @@ import ru.bookingsystem.DTO.UserActivationResponse;
 import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.RoleUpdateRequest;
 import ru.bookingsystem.DTO.requests.UserUpdateRequest;
-import ru.bookingsystem.entity.User;
 import ru.bookingsystem.service.interfaces.UserService;
 
 import java.util.List;

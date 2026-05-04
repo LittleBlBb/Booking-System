@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.CompanyDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
-import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
 import java.util.List;

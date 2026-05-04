@@ -2,19 +2,27 @@ package ru.bookingsystem.service.implementation;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.DTO.requests.BookingCreateRequest;
 import ru.bookingsystem.DTO.requests.BookingUpdateRequest;
 import ru.bookingsystem.entity.Booking;
+import ru.bookingsystem.entity.CompanySettings;
 import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.BookingStatus;
+import ru.bookingsystem.entity.constant.Role;
+import ru.bookingsystem.exception.NoPermissionException;
+import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.repository.BookingRepo;
 import ru.bookingsystem.repository.ResourceRepo;
 import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.service.interfaces.BookingService;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -22,16 +30,17 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepo bookingRepo;
-    private final UserRepo userRepo;
     private final ResourceRepo resourceRepo;
+    private final UserRepo userRepo;
 
     @Transactional
     @Override
-    public Booking editBooking(BookingUpdateRequest request){
+    public BookingDTO editBooking(Authentication authentication, BookingUpdateRequest request){
 
         Booking booking = bookingRepo.findById(request.getBookingId()).orElseThrow();
 
-        User user = userRepo.findById(request.getUserId()).orElseThrow();
+        User user = userRepo.findByUsername(authentication.getName())
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         Resource resource = resourceRepo.findById(request.getResourceId()).orElseThrow();
 
@@ -43,14 +52,15 @@ public class BookingServiceImpl implements BookingService {
         booking.setEndTime(request.getEndTime());
         booking.setStatus(request.getStatus());
 
-        return bookingRepo.save(booking);
+        return new BookingDTO(bookingRepo.save(booking));
     }
 
     @Transactional
     @Override
-    public Booking addBooking(BookingCreateRequest request){
+    public BookingDTO addBooking(Authentication authentication, BookingCreateRequest request){
 
-        User user = userRepo.findById(request.getUserId()).orElseThrow();
+        User user = userRepo.findByUsername(authentication.getName())
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         Resource resource = resourceRepo.findById(request.getResourceId()).orElseThrow();
 
@@ -61,20 +71,24 @@ public class BookingServiceImpl implements BookingService {
         booking.setResource(resource);
         booking.setStartTime(request.getStartTime());
         booking.setEndTime(request.getEndTime());
+        booking.setStatus(BookingStatus.ACTIVE);
 
-        return bookingRepo.save(booking);
+        return new BookingDTO(bookingRepo.save(booking));
     }
 
     @Override
-    public Booking findById(Long id){
+    public BookingDTO findById(Long id){
 
-        return bookingRepo.findById(id).orElseThrow();
+        return new BookingDTO(bookingRepo.findById(id).orElseThrow());
     }
 
     @Override
-    public List<Booking> findAll(){
+    public List<BookingDTO> findAll(){
 
-        return bookingRepo.findAll();
+        return bookingRepo.findAll()
+                .stream()
+                .map(BookingDTO::new)
+                .toList();
     }
 
     @Override
@@ -84,7 +98,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public void deleteById(Long id){
+    public void deleteById(Authentication authentication, Long id){
+
+        User user = userRepo.findByUsername(authentication.getName())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (user.getRole() == Role.USER){
+
+            Booking booking = bookingRepo.findById(id).orElseThrow(() ->
+                    new NotFoundException("Booking with id " + id + " not found"));
+
+            if (booking.getUser().getId() != user.getId()) throw new NoPermissionException();
+        }
 
         bookingRepo.deleteById(id);
     }
@@ -109,6 +134,31 @@ public class BookingServiceImpl implements BookingService {
         if (countOverlapping >= resource.getQuantity()){
             throw new IllegalStateException("Resource is fully booked for this time");
         }
+
+        CompanySettings settings = resource.getCompany().getSettings();
+
+        if (settings != null) {
+
+            LocalTime startTime = start.toLocalTime();
+            LocalTime endTime = end.toLocalTime();
+
+            if (startTime.isBefore(settings.getWorkStart()) ||
+                    endTime.isAfter(settings.getWorkEnd())) {
+                throw new IllegalStateException("Booking outside working hours");
+            }
+
+            long minutes = Duration.between(start, end).toMinutes();
+
+            if (minutes > settings.getMaxBookingDurationMinutes()) {
+                throw new IllegalStateException("Booking duration exceeded");
+            }
+
+            long bookingCount = bookingRepo.countUserBookingsInInterval(user, start, end);
+
+            if (bookingCount >= settings.getMaxBookingsPerUser()) {
+                throw new IllegalStateException("Too many bookings for this time");
+            }
+        }
     }
 
     @Override
@@ -121,5 +171,23 @@ public class BookingServiceImpl implements BookingService {
         }
 
         bookingRepo.saveAll(bookings);
+    }
+
+    @Override
+    public List<BookingDTO> findAllByResourceId(Long resourceId) {
+
+        return bookingRepo.findAllByResourceId(resourceId)
+                .stream()
+                .map(BookingDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<BookingDTO> findAllByResourceIdAndStatus(Long resourceId, BookingStatus status) {
+
+        return bookingRepo.findAllByResourceIdAndStatus(resourceId, status)
+                .stream()
+                .map(BookingDTO::new)
+                .toList();
     }
 }
