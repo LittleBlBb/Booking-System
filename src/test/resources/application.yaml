@@ -1,11 +1,13 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
+    url: jdbc:tc:postgresql:15:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    enabled: false
   mail:
     username: apdragon2014@gmail.com
     password: rakz pkde szmu hrgv

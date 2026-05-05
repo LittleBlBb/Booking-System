@@ -13,7 +13,7 @@ export interface ResourceStatus {
   nextLabel: string;
   colorClass: string;
   dotClass: string;
-  btnClass: string;
+  btnDisabled: boolean;
 }
 
 @Component({
@@ -47,12 +47,17 @@ export class DashboardComponent implements OnInit {
 
   selectedDate = this.todayStr();
 
+  // Ползунок в минутах от effectiveWorkStart
   sliderStart = 0;
   sliderEnd = 60;
   isDragging: 'start' | 'end' | 'move' | null = null;
   dragStartX = 0;
   dragSliderStart = 0;
   dragSliderEnd = 0;
+
+  // Ручной ввод времени
+  manualStartTime = '';
+  manualEndTime = '';
 
   banner: string | null = null;
   bannerKind: BannerType = null;
@@ -91,44 +96,27 @@ export class DashboardComponent implements OnInit {
   // ---------------- LOAD ----------------
 
   loadAll(companyId: number) {
-    let resourcesDone = false;
-    let bookingsDone = false;
-    let settingsDone = false;
-
-    const checkDone = () => {
-      if (resourcesDone && bookingsDone && settingsDone) {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    };
+    let done = 0;
+    const check = () => { if (++done === 3) { this.loading = false; this.cdr.detectChanges(); } };
 
     this.resourceService.getResources(companyId).subscribe({
       next: (list) => {
         this.resources = list;
         this.filteredResources = list;
-        this.allTypes = [...new Set(list.map(r => String(r.name)))];
-        resourcesDone = true;
-        checkDone();
+        this.allTypes = [...new Set(list.map(r => String(r.type_id)))];
+        check();
       },
-      error: () => { resourcesDone = true; checkDone(); }
+      error: () => check()
     });
 
     this.bookingService.getCompanyBookings(companyId).subscribe({
-      next: (bookings) => {
-        this.allBookings = bookings;
-        bookingsDone = true;
-        checkDone();
-      },
-      error: () => { bookingsDone = true; checkDone(); }
+      next: (b) => { this.allBookings = b; check(); },
+      error: () => check()
     });
 
     this.bookingService.getCompanySettings().subscribe({
-      next: (s) => {
-        this.settings = s;
-        settingsDone = true;
-        checkDone();
-      },
-      error: () => { settingsDone = true; checkDone(); }
+      next: (s) => { this.settings = s; check(); },
+      error: () => check()
     });
   }
 
@@ -141,25 +129,22 @@ export class DashboardComponent implements OnInit {
       .map(b => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
       .sort((a, b) => a.start.getTime() - b.start.getTime());
 
-    // Активное прямо сейчас
     const active = bookings.find(b => b.start <= now && b.end > now);
     if (active) {
-      const nextFree = active.end;
-      const nextH = nextFree.getHours().toString().padStart(2, '0');
-      const nextM = nextFree.getMinutes().toString().padStart(2, '0');
+      const h = active.end.getHours().toString().padStart(2, '0');
+      const m = active.end.getMinutes().toString().padStart(2, '0');
       return {
         label: 'Занято',
-        nextLabel: `Свободно с ${nextH}:${nextM}`,
+        nextLabel: `Свободно с ${h}:${m}`,
         colorClass: 'bg-red-50 text-red-500',
         dotClass: 'bg-red-500',
-        btnClass: 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        btnDisabled: true
       };
     }
 
-    // Скоро будет занято (в течение 15 минут)
     const soon = bookings.find(b => {
-      const diffMs = b.start.getTime() - now.getTime();
-      return diffMs > 0 && diffMs <= 15 * 60 * 1000;
+      const diff = b.start.getTime() - now.getTime();
+      return diff > 0 && diff <= 15 * 60 * 1000;
     });
     if (soon) {
       const diffMin = Math.round((soon.start.getTime() - now.getTime()) / 60000);
@@ -168,12 +153,10 @@ export class DashboardComponent implements OnInit {
         nextLabel: `Занято через ${diffMin} мин`,
         colorClass: 'bg-amber-50 text-amber-500',
         dotClass: 'bg-amber-500',
-        btnClass: 'border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50'
+        btnDisabled: false
       };
     }
 
-    // Свободно
-    // Ищем ближайшее будущее бронирование
     const next = bookings.find(b => b.start > now);
     let nextLabel = 'Свободно сейчас';
     if (next) {
@@ -192,13 +175,8 @@ export class DashboardComponent implements OnInit {
       nextLabel,
       colorClass: 'bg-emerald-50 text-emerald-600',
       dotClass: 'bg-emerald-500 animate-pulse',
-      btnClass: 'bg-indigo-600 text-white hover:opacity-90'
+      btnDisabled: resource.quantity === 0
     };
-  }
-
-  canBook(resource: Resource): boolean {
-    const status = this.getResourceStatus(resource);
-    return status.label !== 'Занято' && resource.quantity > 0;
   }
 
   // ---------------- FILTERS ----------------
@@ -216,9 +194,7 @@ export class DashboardComponent implements OnInit {
       const q = this.searchQuery.toLowerCase();
       result = result.filter(r => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q));
     }
-    if (this.selectedType) {
-      result = result.filter(r => String(r.type_id) === this.selectedType);
-    }
+    if (this.selectedType) result = result.filter(r => String(r.type_id) === this.selectedType);
     this.filteredResources = result;
   }
 
@@ -229,22 +205,11 @@ export class DashboardComponent implements OnInit {
     this.selectedDate = this.todayStr();
     this.showBookingModal = true;
     this.bookingLoading = true;
-
-    // Начальный слайдер с учётом текущего времени
-    this.sliderStart = 0;
-    this.sliderEnd = Math.min(60, this.maxDurationMinutes() || 60);
+    this.initSlider();
 
     this.bookingService.getResourceBookings(resource.id).subscribe({
-      next: (bookings) => {
-        this.existingBookings = bookings;
-        this.bookingLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.existingBookings = [];
-        this.bookingLoading = false;
-        this.cdr.detectChanges();
-      }
+      next: (b) => { this.existingBookings = b; this.bookingLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.existingBookings = []; this.bookingLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -256,22 +221,20 @@ export class DashboardComponent implements OnInit {
   }
 
   onDateChange() {
+    this.initSlider();
     if (!this.selectedResource) return;
-    this.sliderStart = 0;
-    this.sliderEnd = Math.min(60, this.maxDurationMinutes() || 60);
     this.bookingLoading = true;
     this.bookingService.getResourceBookings(this.selectedResource.id).subscribe({
-      next: (bookings) => {
-        this.existingBookings = bookings;
-        this.bookingLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.existingBookings = [];
-        this.bookingLoading = false;
-        this.cdr.detectChanges();
-      }
+      next: (b) => { this.existingBookings = b; this.bookingLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.existingBookings = []; this.bookingLoading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  initSlider() {
+    this.sliderStart = 0;
+    const maxDur = this.maxDurationMinutes();
+    this.sliderEnd = Math.min(maxDur || 60, this.workDurationMinutes());
+    this.syncManualFromSlider();
   }
 
   submitBooking() {
@@ -281,23 +244,17 @@ export class DashboardComponent implements OnInit {
     const startTotal = wh * 60 + wm + this.sliderStart;
     const endTotal = wh * 60 + wm + this.sliderEnd;
 
-    const fmt = (total: number) =>
-      `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`;
+    const fmt = (t: number) =>
+      `${Math.floor(t / 60).toString().padStart(2, '0')}:${(t % 60).toString().padStart(2, '0')}`;
 
     const startTime = `${this.selectedDate}T${fmt(startTotal)}:00.000Z`;
     const endTime = `${this.selectedDate}T${fmt(endTotal)}:00.000Z`;
 
     this.bookingSubmitting = true;
-
-    this.bookingService.createBooking({
-      resourceId: this.selectedResource.id,
-      startTime,
-      endTime
-    }).subscribe({
+    this.bookingService.createBooking({ resourceId: this.selectedResource.id, startTime, endTime }).subscribe({
       next: (booking) => {
         this.bookingSubmitting = false;
         const name = this.selectedResource!.name;
-        // Добавляем новое бронирование в локальный список
         this.allBookings.push(booking);
         this.closeBookingModal();
         this.setBanner(`Бронирование «${name}» подтверждено`, 'success');
@@ -311,6 +268,52 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // ---------------- MANUAL TIME INPUT ----------------
+
+  syncManualFromSlider() {
+    this.manualStartTime = this.sliderStartTime();
+    this.manualEndTime = this.sliderEndTime();
+  }
+
+  onManualStartChange() {
+    const [wh, wm] = this.effectiveWorkStart().split(':').map(Number);
+    const [eh, em] = this.workEndStr().split(':').map(Number);
+    const workStartMins = wh * 60 + wm;
+    const workEndMins = eh * 60 + em;
+
+    const [ih, im] = this.manualStartTime.split(':').map(Number);
+    if (isNaN(ih) || isNaN(im)) return;
+
+    const inputMins = ih * 60 + im;
+    let newStart = Math.max(0, Math.min(inputMins - workStartMins, workEndMins - workStartMins - 1));
+    const maxDur = this.maxDurationMinutes();
+    if (maxDur && newStart + maxDur < this.sliderEnd) {
+      // keep end, adjust start
+    }
+    if (newStart >= this.sliderEnd) newStart = this.sliderEnd - 1;
+    this.sliderStart = newStart;
+    this.syncManualFromSlider();
+    this.cdr.detectChanges();
+  }
+
+  onManualEndChange() {
+    const [wh, wm] = this.effectiveWorkStart().split(':').map(Number);
+    const [eh, em] = this.workEndStr().split(':').map(Number);
+    const workStartMins = wh * 60 + wm;
+    const workEndMins = eh * 60 + em;
+
+    const [ih, im] = this.manualEndTime.split(':').map(Number);
+    if (isNaN(ih) || isNaN(im)) return;
+
+    const inputMins = ih * 60 + im;
+    let newEnd = Math.max(this.sliderStart + 1, Math.min(inputMins - workStartMins, workEndMins - workStartMins));
+    const maxDur = this.maxDurationMinutes();
+    if (maxDur) newEnd = Math.min(newEnd, this.sliderStart + maxDur);
+    this.sliderEnd = newEnd;
+    this.syncManualFromSlider();
+    this.cdr.detectChanges();
+  }
+
   // ---------------- QUICK SELECT ----------------
 
   quickSelect(minutes: number) {
@@ -318,11 +321,9 @@ export class DashboardComponent implements OnInit {
     const duration = max ? Math.min(minutes, max) : minutes;
     const totalMins = this.workDurationMinutes();
     let newEnd = this.sliderStart + duration;
-    if (newEnd > totalMins) {
-      newEnd = totalMins;
-      this.sliderStart = Math.max(0, newEnd - duration);
-    }
+    if (newEnd > totalMins) { newEnd = totalMins; this.sliderStart = Math.max(0, newEnd - duration); }
     this.sliderEnd = newEnd;
+    this.syncManualFromSlider();
     this.cdr.detectChanges();
   }
 
@@ -343,7 +344,8 @@ export class DashboardComponent implements OnInit {
     const rect = this.timelineEl.nativeElement.getBoundingClientRect();
     const totalMins = this.workDurationMinutes();
     const pxPerMin = rect.width / totalMins;
-    const deltaMins = Math.round((event.clientX - this.dragStartX) / pxPerMin / 15) * 15;
+    // Минимальный шаг — 1 минута (без округления до 15)
+    const deltaMins = Math.round((event.clientX - this.dragStartX) / pxPerMin);
     const maxDur = this.maxDurationMinutes();
 
     if (this.isDragging === 'move') {
@@ -352,15 +354,16 @@ export class DashboardComponent implements OnInit {
       this.sliderStart = newStart;
       this.sliderEnd = newStart + duration;
     } else if (this.isDragging === 'start') {
-      let newStart = Math.max(0, Math.min(this.dragSliderStart + deltaMins, this.sliderEnd - 15));
+      let newStart = Math.max(0, Math.min(this.dragSliderStart + deltaMins, this.sliderEnd - 1));
       if (maxDur) newStart = Math.max(newStart, this.sliderEnd - maxDur);
       this.sliderStart = newStart;
     } else if (this.isDragging === 'end') {
-      let newEnd = Math.min(totalMins, Math.max(this.dragSliderEnd + deltaMins, this.sliderStart + 15));
+      let newEnd = Math.min(totalMins, Math.max(this.dragSliderEnd + deltaMins, this.sliderStart + 1));
       if (maxDur) newEnd = Math.min(newEnd, this.sliderStart + maxDur);
       this.sliderEnd = newEnd;
     }
 
+    this.syncManualFromSlider();
     this.cdr.detectChanges();
   }
 
@@ -368,7 +371,6 @@ export class DashboardComponent implements OnInit {
 
   // ---------------- TIMELINE HELPERS ----------------
 
-  // Для сегодня — начало от текущего часа, для других дней — workStart
   effectiveWorkStart(): string {
     const isToday = this.selectedDate === this.todayStr();
     if (!isToday) return this.workStartStr();
@@ -378,9 +380,8 @@ export class DashboardComponent implements OnInit {
     const [wh] = this.workStartStr().split(':').map(Number);
     const [eh] = this.workEndStr().split(':').map(Number);
 
-    if (nowH >= eh) return this.workEndStr(); // рабочий день закончился
-    const effectiveH = Math.max(nowH, wh);
-    return `${effectiveH.toString().padStart(2, '0')}:00`;
+    if (nowH >= eh) return this.workEndStr();
+    return `${Math.max(nowH, wh).toString().padStart(2, '0')}:00`;
   }
 
   workStartStr(): string { return this.settings?.workStart?.slice(0, 5) || '08:00'; }
@@ -395,13 +396,13 @@ export class DashboardComponent implements OnInit {
   maxDurationMinutes(): number { return this.settings?.maxBookingDurationMinutes || 0; }
 
   sliderStartPct(): number {
-    const total = this.workDurationMinutes();
-    return total > 0 ? (this.sliderStart / total) * 100 : 0;
+    const t = this.workDurationMinutes();
+    return t > 0 ? (this.sliderStart / t) * 100 : 0;
   }
 
   sliderWidthPct(): number {
-    const total = this.workDurationMinutes();
-    return total > 0 ? ((this.sliderEnd - this.sliderStart) / total) * 100 : 0;
+    const t = this.workDurationMinutes();
+    return t > 0 ? ((this.sliderEnd - this.sliderStart) / t) * 100 : 0;
   }
 
   sliderStartTime(): string {
@@ -429,16 +430,13 @@ export class DashboardComponent implements OnInit {
     const [sh] = this.effectiveWorkStart().split(':').map(Number);
     const [eh] = this.workEndStr().split(':').map(Number);
     const hours = [];
-    for (let h = sh; h <= eh; h++) {
-      hours.push(`${h.toString().padStart(2, '0')}:00`);
-    }
+    for (let h = sh; h <= eh; h++) hours.push(`${h.toString().padStart(2, '0')}:00`);
     return hours;
   }
 
   bookedSlots(): { leftPct: number; widthPct: number }[] {
     const totalMins = this.workDurationMinutes();
     if (totalMins <= 0) return [];
-
     const [wh, wm] = this.effectiveWorkStart().split(':').map(Number);
     const workStartMins = wh * 60 + wm;
 
@@ -455,8 +453,6 @@ export class DashboardComponent implements OnInit {
         };
       });
   }
-
-  // ---------------- UTILS ----------------
 
   todayStr(): string { return new Date().toISOString().slice(0, 10); }
   goProfile() { this.router.navigate(['/profile']); }
