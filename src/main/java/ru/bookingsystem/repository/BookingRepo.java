@@ -1,16 +1,18 @@
 package ru.bookingsystem.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.entity.Booking;
 import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.BookingStatus;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 public interface BookingRepo extends JpaRepository<Booking, Long> {
@@ -75,4 +77,8 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
         WHERE r.company.id = :companyId
 """)
     List<Booking> findAllByCompanyId(Long companyId);
+
+    Page<Booking> findAllByUserId(Long userId, Pageable pageable);
+
+    Page<Booking> findAllByUserIdAndStatus(Long userId, Pageable pageable, BookingStatus status);
 }

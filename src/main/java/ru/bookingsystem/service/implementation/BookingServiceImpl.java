@@ -2,6 +2,10 @@ package ru.bookingsystem.service.implementation;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.BookingDTO;
@@ -13,6 +17,7 @@ import ru.bookingsystem.entity.Resource;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.BookingStatus;
 import ru.bookingsystem.entity.constant.Role;
+import ru.bookingsystem.exception.AlreadyExistsException;
 import ru.bookingsystem.exception.BookingException;
 import ru.bookingsystem.exception.NoPermissionException;
 import ru.bookingsystem.exception.NotFoundException;
@@ -207,5 +212,49 @@ public class BookingServiceImpl implements BookingService {
                 .stream()
                 .map(BookingDTO::new)
                 .toList();
+    }
+
+    @Override
+    public Page<BookingDTO> findAllByUserId(Long userId, int page, int size, String[] sort) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        return bookingRepo.findAllByUserId(userId, pageable)
+                .map(BookingDTO::new);
+    }
+
+    @Override
+    public Page<BookingDTO> findAllByUserIdAndStatus(Long userId, int page, int size, String[] sort, BookingStatus status) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        return bookingRepo.findAllByUserIdAndStatus(userId, pageable, status)
+                .map(BookingDTO::new);
+    }
+
+    @Override
+    public BookingDTO cancelById(Authentication authentication, Long id) {
+
+        User user = userRepo.findByUsername(authentication.getName())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Booking booking = bookingRepo.findById(id).orElseThrow(() ->
+                new NotFoundException("Booking with id " + id + " not found"));
+
+        if (!booking.getStatus().equals(BookingStatus.ACTIVE)){
+            throw new AlreadyExistsException("Booking already canceled or expired");
+        }
+
+        if (user.getCompany().getId() != booking.getResource().getCompany().getId()){
+            throw new NoPermissionException();
+        } else {
+            if (user.getId() != booking.getUser().getId() && user.getRole().equals(Role.USER)){
+                throw new NoPermissionException();
+            }
+        }
+
+        booking.setStatus(BookingStatus.CANCELED);
+
+        return new BookingDTO(bookingRepo.save(booking));
     }
 }

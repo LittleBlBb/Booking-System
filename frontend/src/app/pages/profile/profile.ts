@@ -179,4 +179,6 @@ export class ProfileComponent {
     this.bannerKind = null;
     this.cdr.detectChanges();
   }
+
+  goMyBookings() { this.router.navigate(['/my-bookings']); }
 }

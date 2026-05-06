@@ -13,7 +13,6 @@ export interface ResourceStatus {
   nextLabel: string;
   colorClass: string;
   dotClass: string;
-  btnDisabled: boolean;
 }
 
 @Component({
@@ -38,7 +37,6 @@ export class DashboardComponent implements OnInit {
   allTypes: string[] = [];
   loading = true;
 
-  // --- Booking modal ---
   showBookingModal = false;
   selectedResource: Resource | null = null;
   existingBookings: Booking[] = [];
@@ -47,7 +45,6 @@ export class DashboardComponent implements OnInit {
 
   selectedDate = this.todayStr();
 
-  // Ползунок в минутах от effectiveWorkStart
   sliderStart = 0;
   sliderEnd = 60;
   isDragging: 'start' | 'end' | 'move' | null = null;
@@ -55,7 +52,6 @@ export class DashboardComponent implements OnInit {
   dragSliderStart = 0;
   dragSliderEnd = 0;
 
-  // Ручной ввод времени
   manualStartTime = '';
   manualEndTime = '';
 
@@ -124,39 +120,40 @@ export class DashboardComponent implements OnInit {
 
   getResourceStatus(resource: Resource): ResourceStatus {
     const now = new Date();
+
     const bookings = this.allBookings
       .filter(b => b.resourceId === resource.id)
       .map(b => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
       .sort((a, b) => a.start.getTime() - b.start.getTime());
 
+    // Активная бронь прямо сейчас
     const active = bookings.find(b => b.start <= now && b.end > now);
     if (active) {
-      const h = active.end.getHours().toString().padStart(2, '0');
-      const m = active.end.getMinutes().toString().padStart(2, '0');
-      return {
-        label: 'Занято',
-        nextLabel: `Свободно с ${h}:${m}`,
-        colorClass: 'bg-red-50 text-red-500',
-        dotClass: 'bg-red-500',
-        btnDisabled: true
-      };
+      const diffMs = active.end.getTime() - now.getTime();
+      const diffMin = Math.round(diffMs / 60000);
+
+      if (diffMin < 60) {
+        // Скоро освободится
+        return {
+          label: 'Скоро',
+          nextLabel: `Свободно через ${diffMin} мин`,
+          colorClass: 'bg-amber-50 text-amber-500',
+          dotClass: 'bg-amber-500'
+        };
+      } else {
+        // Занято надолго
+        const h = active.end.getHours().toString().padStart(2, '0');
+        const m = active.end.getMinutes().toString().padStart(2, '0');
+        return {
+          label: 'Занято',
+          nextLabel: `Свободно с ${h}:${m}`,
+          colorClass: 'bg-red-50 text-red-500',
+          dotClass: 'bg-red-500'
+        };
+      }
     }
 
-    const soon = bookings.find(b => {
-      const diff = b.start.getTime() - now.getTime();
-      return diff > 0 && diff <= 15 * 60 * 1000;
-    });
-    if (soon) {
-      const diffMin = Math.round((soon.start.getTime() - now.getTime()) / 60000);
-      return {
-        label: 'Скоро',
-        nextLabel: `Занято через ${diffMin} мин`,
-        colorClass: 'bg-amber-50 text-amber-500',
-        dotClass: 'bg-amber-500',
-        btnDisabled: false
-      };
-    }
-
+    // Нет активной брони — свободно
     const next = bookings.find(b => b.start > now);
     let nextLabel = 'Свободно сейчас';
     if (next) {
@@ -174,8 +171,7 @@ export class DashboardComponent implements OnInit {
       label: 'Свободно',
       nextLabel,
       colorClass: 'bg-emerald-50 text-emerald-600',
-      dotClass: 'bg-emerald-500 animate-pulse',
-      btnDisabled: resource.quantity === 0
+      dotClass: 'bg-emerald-500 animate-pulse'
     };
   }
 
@@ -284,14 +280,11 @@ export class DashboardComponent implements OnInit {
     const [ih, im] = this.manualStartTime.split(':').map(Number);
     if (isNaN(ih) || isNaN(im)) return;
 
-    const inputMins = ih * 60 + im;
-    let newStart = Math.max(0, Math.min(inputMins - workStartMins, workEndMins - workStartMins - 1));
-    const maxDur = this.maxDurationMinutes();
-    if (maxDur && newStart + maxDur < this.sliderEnd) {
-      // keep end, adjust start
-    }
+    let newStart = Math.max(0, Math.min(ih * 60 + im - workStartMins, workEndMins - workStartMins - 1));
     if (newStart >= this.sliderEnd) newStart = this.sliderEnd - 1;
-    this.sliderStart = newStart;
+    const maxDur = this.maxDurationMinutes();
+    if (maxDur) newStart = Math.max(newStart, this.sliderEnd - maxDur);
+    this.sliderStart = Math.max(0, newStart);
     this.syncManualFromSlider();
     this.cdr.detectChanges();
   }
@@ -305,8 +298,7 @@ export class DashboardComponent implements OnInit {
     const [ih, im] = this.manualEndTime.split(':').map(Number);
     if (isNaN(ih) || isNaN(im)) return;
 
-    const inputMins = ih * 60 + im;
-    let newEnd = Math.max(this.sliderStart + 1, Math.min(inputMins - workStartMins, workEndMins - workStartMins));
+    let newEnd = Math.max(this.sliderStart + 1, Math.min(ih * 60 + im - workStartMins, workEndMins - workStartMins));
     const maxDur = this.maxDurationMinutes();
     if (maxDur) newEnd = Math.min(newEnd, this.sliderStart + maxDur);
     this.sliderEnd = newEnd;
@@ -344,7 +336,6 @@ export class DashboardComponent implements OnInit {
     const rect = this.timelineEl.nativeElement.getBoundingClientRect();
     const totalMins = this.workDurationMinutes();
     const pxPerMin = rect.width / totalMins;
-    // Минимальный шаг — 1 минута (без округления до 15)
     const deltaMins = Math.round((event.clientX - this.dragStartX) / pxPerMin);
     const maxDur = this.maxDurationMinutes();
 
@@ -476,4 +467,5 @@ export class DashboardComponent implements OnInit {
     this.banner = null;
     this.bannerKind = null;
   }
+  goMyBookings() { this.router.navigate(['/my-bookings']); }
 }

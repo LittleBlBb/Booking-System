@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.BookingDTO;
@@ -88,5 +89,23 @@ public class BookingController {
         return status == null
                 ? bookingService.findAllByCompanyId(companyId)
                 : bookingService.findAllByCompanyIdAndStatus(companyId, status);
+    }
+
+    @GetMapping("/{userId}/allByUser")
+    public Page<BookingDTO> findAllByUserId(@PathVariable Long userId,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size,
+                                            @RequestParam(defaultValue = "id,desc") String[] sort,
+                                            @RequestParam(required = false) BookingStatus status){
+
+        return status == null
+                ? bookingService.findAllByUserId(userId, page, size, sort)
+                : bookingService.findAllByUserIdAndStatus(userId, page, size, sort, status);
+    }
+
+    @PatchMapping("/cancel")
+    public BookingDTO cancelById(Authentication authentication, @RequestParam Long id){
+
+        return bookingService.cancelById(authentication, id);
     }
 }

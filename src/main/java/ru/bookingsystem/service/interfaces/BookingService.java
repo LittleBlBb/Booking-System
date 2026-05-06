@@ -1,5 +1,6 @@
 package ru.bookingsystem.service.interfaces;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import ru.bookingsystem.DTO.BookingDTO;
 import ru.bookingsystem.DTO.requests.BookingCreateRequest;
@@ -31,4 +32,10 @@ public interface BookingService {
     List<BookingDTO> findAllByCompanyId(Long companyId);
 
     List<BookingDTO> findAllByCompanyIdAndStatus(Long companyId, BookingStatus status);
+
+    Page<BookingDTO> findAllByUserId(Long userId, int page, int size, String[] sort);
+
+    Page<BookingDTO> findAllByUserIdAndStatus(Long userId, int page, int size, String[] sort, BookingStatus status);
+
+    BookingDTO cancelById(Authentication authentication, Long id);
 }

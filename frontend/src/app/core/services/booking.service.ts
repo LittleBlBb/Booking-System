@@ -10,11 +10,20 @@ export interface CompanySettings {
 }
 
 export interface Booking {
+  id: number;
   resourceId: number;
   userId: number;
   startTime: string;
   endTime: string;
   status: string;
+}
+
+export interface BookingPage {
+  content: Booking[];
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  number: number;
 }
 
 export interface CreateBookingRequest {
@@ -42,7 +51,21 @@ export class BookingService {
     return this.http.get<Booking[]>(`${this.apiUrl}/bookings/${resourceId}/bookings?status=ACTIVE`);
   }
 
+  getUserBookings(userId: number, page: number = 0, size: number = 20) {
+    return this.http.get<BookingPage>(
+      `${this.apiUrl}/bookings/${userId}/allByUser?page=${page}&size=${size}&sort=id&sort=desc`
+    );
+  }
+
+  getBookingById(bookingId: number) {
+    return this.http.get<Booking>(`${this.apiUrl}/bookings/getById?id=${bookingId}`);
+  }
+
   createBooking(data: CreateBookingRequest) {
     return this.http.post<Booking>(`${this.apiUrl}/bookings/create`, data);
+  }
+
+  cancelBooking(bookingId: number) {
+    return this.http.patch<Booking>(`${this.apiUrl}/bookings/cancel?id=${bookingId}`, null);
   }
 }

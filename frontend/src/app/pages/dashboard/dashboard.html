@@ -1,5 +1,5 @@
 <div
-  class="min-h-screen w-full bg-gray-50 flex flex-row relative overflow-hidden"
+  class="h-screen w-full bg-gray-50 flex flex-row overflow-hidden"
   (mousemove)="onMouseMove($event)"
   (mouseup)="onMouseUp()"
 >
@@ -14,7 +14,6 @@
       class="w-full max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col mx-4"
       (click)="$event.stopPropagation()"
     >
-      <!-- Header -->
       <div class="p-6 border-b border-gray-200 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
@@ -30,10 +29,8 @@
         </button>
       </div>
 
-      <!-- Body -->
       <div class="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
 
-        <!-- Дата -->
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1.5">Дата бронирования</label>
           <input
@@ -45,7 +42,6 @@
           />
         </div>
 
-        <!-- Timeline -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-tight">Доступное время</h3>
@@ -57,17 +53,14 @@
           </div>
 
           <div *ngIf="!bookingLoading" class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-            <!-- Часовые метки -->
             <div class="flex justify-between text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">
               <span *ngFor="let h of timelineHours()">{{ h }}</span>
             </div>
 
-            <!-- Таймлайн -->
             <div
               #timelineEl
               class="relative h-12 w-full bg-emerald-100 rounded-lg overflow-visible select-none"
             >
-              <!-- Занятые слоты -->
               <div
                 *ngFor="let slot of bookedSlots()"
                 class="absolute top-0 h-full bg-red-300/60 border-x border-red-400/30 rounded pointer-events-none"
@@ -75,7 +68,6 @@
                 [style.width.%]="slot.widthPct"
               ></div>
 
-              <!-- Выбранный диапазон -->
               <div
                 class="absolute top-0 h-full bg-indigo-500 shadow-lg rounded flex items-center justify-center cursor-move z-10"
                 [style.left.%]="sliderStartPct()"
@@ -83,24 +75,15 @@
                 (mousedown)="onMouseDown($event, 'move')"
               >
                 <iconify-icon icon="lucide:move" class="text-white text-xs pointer-events-none"></iconify-icon>
-
-                <div
-                  class="absolute left-0 top-0 h-full w-4 cursor-w-resize flex items-center justify-center z-20"
-                  (mousedown)="$event.stopPropagation(); onMouseDown($event, 'start')"
-                >
+                <div class="absolute left-0 top-0 h-full w-4 cursor-w-resize flex items-center justify-center z-20" (mousedown)="$event.stopPropagation(); onMouseDown($event, 'start')">
                   <div class="w-1 h-6 bg-white/70 rounded-full pointer-events-none"></div>
                 </div>
-
-                <div
-                  class="absolute right-0 top-0 h-full w-4 cursor-e-resize flex items-center justify-center z-20"
-                  (mousedown)="$event.stopPropagation(); onMouseDown($event, 'end')"
-                >
+                <div class="absolute right-0 top-0 h-full w-4 cursor-e-resize flex items-center justify-center z-20" (mousedown)="$event.stopPropagation(); onMouseDown($event, 'end')">
                   <div class="w-1 h-6 bg-white/70 rounded-full pointer-events-none"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Легенда -->
             <div class="mt-3 flex gap-4 text-xs font-medium text-gray-500">
               <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-200"></span> Доступно</div>
               <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-300/60"></span> Занято</div>
@@ -109,80 +92,47 @@
           </div>
         </div>
 
-        <!-- Ручной ввод времени -->
         <div class="grid grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1.5">Время начала</label>
             <div class="relative">
               <iconify-icon icon="lucide:clock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></iconify-icon>
-              <input
-                [(ngModel)]="manualStartTime"
-                (change)="onManualStartChange()"
-                type="time"
-                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-semibold"
-              />
+              <input [(ngModel)]="manualStartTime" (change)="onManualStartChange()" type="time" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-semibold" />
             </div>
           </div>
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1.5">Время окончания</label>
             <div class="relative">
               <iconify-icon icon="lucide:clock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></iconify-icon>
-              <input
-                [(ngModel)]="manualEndTime"
-                (change)="onManualEndChange()"
-                type="time"
-                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-semibold"
-              />
+              <input [(ngModel)]="manualEndTime" (change)="onManualEndChange()" type="time" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-semibold" />
             </div>
           </div>
         </div>
 
-        <!-- Быстрый выбор -->
         <div class="space-y-2">
           <p class="text-sm font-bold text-gray-700 uppercase tracking-tight">Быстрый выбор</p>
           <div class="flex gap-2">
-            <button
-              *ngFor="let q of [30, 60, 120, 240]"
-              (click)="quickSelect(q)"
-              class="flex-1 py-2 border rounded-lg text-sm font-medium transition-colors"
-              [ngClass]="(sliderEnd - sliderStart) === q
-                ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300'"
-            >
+            <button *ngFor="let q of [30, 60, 120, 240]" (click)="quickSelect(q)" class="flex-1 py-2 border rounded-lg text-sm font-medium transition-colors" [ngClass]="(sliderEnd - sliderStart) === q ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold' : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300'">
               {{ q < 60 ? q + 'м' : (q / 60) + 'ч' }}
             </button>
           </div>
         </div>
 
-        <!-- Ограничение -->
-        <div
-          *ngIf="settings?.maxBookingDurationMinutes"
-          class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2 text-sm text-blue-700"
-        >
+        <div *ngIf="settings?.maxBookingDurationMinutes" class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2 text-sm text-blue-700">
           <iconify-icon icon="lucide:info" class="text-base shrink-0"></iconify-icon>
           Максимальная длительность: <strong class="ml-1">{{ settings!.maxBookingDurationMinutes }} мин</strong>
         </div>
 
       </div>
 
-      <!-- Footer -->
       <div class="p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
         <div>
           <p class="text-xs text-gray-400">Общая длительность</p>
           <p class="text-lg font-bold text-gray-900">{{ durationLabel() }}</p>
         </div>
         <div class="flex gap-3">
-          <button
-            (click)="closeBookingModal()"
-            class="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Отмена
-          </button>
-          <button
-            (click)="submitBooking()"
-            [disabled]="bookingSubmitting"
-            class="px-8 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-lg transition-opacity disabled:opacity-50"
-          >
+          <button (click)="closeBookingModal()" class="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors">Отмена</button>
+          <button (click)="submitBooking()" [disabled]="bookingSubmitting" class="px-8 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-lg transition-opacity disabled:opacity-50">
             {{ bookingSubmitting ? 'Отправка...' : 'Подтвердить' }}
           </button>
         </div>
@@ -190,8 +140,8 @@
     </div>
   </div>
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-white flex flex-col shrink-0">
+  <!-- SIDEBAR — фиксированный -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col shrink-0 h-full">
     <div class="p-6 flex items-center gap-3">
       <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
         <iconify-icon icon="lucide:zap" class="text-xl"></iconify-icon>
@@ -204,7 +154,10 @@
         <iconify-icon icon="lucide:layout-dashboard" class="text-xl"></iconify-icon>
         <span>Панель управления</span>
       </a>
-      <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+      <a
+        (click)="goMyBookings()"
+        class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer"
+      >
         <iconify-icon icon="lucide:calendar" class="text-xl"></iconify-icon>
         <span>Мои бронирования</span>
       </a>
@@ -218,10 +171,7 @@
     </nav>
 
     <div class="p-4 border-t border-white/10">
-      <div
-        (click)="goProfile()"
-        class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-all cursor-pointer"
-      >
+      <div (click)="goProfile()" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-all cursor-pointer">
         <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold">
           {{ me?.username?.slice(0, 2)?.toUpperCase() || '?' }}
         </div>
@@ -229,43 +179,25 @@
           <p class="text-sm font-semibold truncate">{{ me?.username || '...' }}</p>
           <p class="text-xs text-slate-400 truncate">{{ me?.email || '' }}</p>
         </div>
-        <iconify-icon
-          icon="lucide:log-out"
-          class="text-slate-400 hover:text-red-400 transition-colors"
-          (click)="$event.stopPropagation(); logout()"
-        ></iconify-icon>
+        <iconify-icon icon="lucide:log-out" class="text-slate-400 hover:text-red-400 transition-colors" (click)="$event.stopPropagation(); logout()"></iconify-icon>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- MAIN — скроллится -->
   <main class="flex-1 flex flex-col overflow-hidden">
 
     <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
       <h2 class="text-lg font-bold text-gray-900">Панель ресурсов</h2>
       <div class="relative">
         <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></iconify-icon>
-        <input
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearch()"
-          type="text"
-          class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400 w-64"
-          placeholder="Поиск ресурсов..."
-        />
+        <input [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" type="text" class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400 w-64" placeholder="Поиск ресурсов..." />
       </div>
     </header>
 
     <div class="flex-1 overflow-y-auto p-8">
 
-      <!-- BANNER -->
-      <div
-        *ngIf="banner"
-        class="flex items-center gap-3 px-5 py-4 text-sm rounded-xl border mb-6"
-        [ngClass]="{
-          'bg-green-50 border-green-200 text-green-800': bannerKind === 'success',
-          'bg-red-50 border-red-200 text-red-800': bannerKind === 'error'
-        }"
-      >
+      <div *ngIf="banner" class="flex items-center gap-3 px-5 py-4 text-sm rounded-xl border mb-6" [ngClass]="{ 'bg-green-50 border-green-200 text-green-800': bannerKind === 'success', 'bg-red-50 border-red-200 text-red-800': bannerKind === 'error' }">
         <span>{{ bannerKind === 'success' ? '✅' : '❌' }}</span>
         <span class="flex-1 font-medium">{{ banner }}</span>
         <button (click)="closeBanner()" class="opacity-50 hover:opacity-100 transition-opacity">✕</button>
@@ -277,23 +209,9 @@
 
       <ng-container *ngIf="!loading">
 
-        <!-- ФИЛЬТРЫ -->
         <div class="flex items-center gap-2 mb-8 flex-wrap">
-          <button
-            class="px-4 py-2 text-sm font-semibold rounded-full transition-colors"
-            [ngClass]="selectedType === '' ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'"
-            (click)="selectType('')"
-          >
-            Все ресурсы
-          </button>
-          <button
-            *ngFor="let type of allTypes"
-            class="px-4 py-2 text-sm font-medium rounded-full transition-colors"
-            [ngClass]="selectedType === type ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'"
-            (click)="selectType(type)"
-          >
-            Тип {{ type }}
-          </button>
+          <button class="px-4 py-2 text-sm font-semibold rounded-full transition-colors" [ngClass]="selectedType === '' ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'" (click)="selectType('')">Все ресурсы</button>
+          <button *ngFor="let type of allTypes" class="px-4 py-2 text-sm font-medium rounded-full transition-colors" [ngClass]="selectedType === type ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'" (click)="selectType(type)">Тип {{ type }}</button>
         </div>
 
         <div *ngIf="filteredResources.length === 0" class="flex flex-col items-center justify-center h-64 text-gray-400 gap-3">
@@ -301,21 +219,14 @@
           <p class="text-sm">Ресурсы не найдены</p>
         </div>
 
-        <!-- КАРТОЧКИ -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div
-            *ngFor="let resource of filteredResources"
-            class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
-          >
+          <div *ngFor="let resource of filteredResources" class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <ng-container *ngIf="getResourceStatus(resource) as status">
               <div class="flex justify-between items-start mb-4">
                 <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
                   <iconify-icon icon="lucide:box" class="text-2xl"></iconify-icon>
                 </div>
-                <div
-                  class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
-                  [ngClass]="status.colorClass"
-                >
+                <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider" [ngClass]="status.colorClass">
                   <span class="w-2 h-2 rounded-full" [ngClass]="status.dotClass"></span>
                   {{ status.label }}
                 </div>
@@ -329,15 +240,8 @@
                   <span class="text-gray-400">Далее:</span>
                   <span class="font-semibold text-gray-700 ml-1">{{ status.nextLabel }}</span>
                 </div>
-                <button
-                  (click)="!status.btnDisabled && openBooking(resource)"
-                  class="px-5 py-2 font-bold rounded-lg transition-all text-sm"
-                  [ngClass]="status.btnDisabled
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-indigo-600 text-white hover:opacity-90'"
-                  [disabled]="status.btnDisabled"
-                >
-                  {{ status.label === 'Занято' ? 'Занято' : 'Забронировать' }}
+                <button (click)="openBooking(resource)" [disabled]="resource.quantity === 0" class="px-5 py-2 font-bold rounded-lg transition-all text-sm" [ngClass]="resource.quantity === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:opacity-90'">
+                  {{ resource.quantity === 0 ? 'Нет в наличии' : 'Забронировать' }}
                 </button>
               </div>
             </ng-container>

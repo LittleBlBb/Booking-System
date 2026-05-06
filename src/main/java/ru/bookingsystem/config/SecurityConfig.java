@@ -34,6 +34,7 @@ public class SecurityConfig {
             "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/{companyId}/findAll/",
             "/api/company/join-request", "/api/users/updateUser", "/api/users/delete", "/api/users/leave",
             "/api/company_settings/getCompanySettings", "/api/bookings/{resourceId}/bookings", "/api/bookings/{companyId}/all",
+            "/api/bookings/{userId}/allByUser", "/api/bookings/cancel"
             
     };
 

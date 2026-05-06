@@ -8,9 +8,11 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     enabled: false
+  config:
+    import: optional:file:.env[.properties]
   mail:
-    username: apdragon2014@gmail.com
-    password: rakz pkde szmu hrgv
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     host: smtp.gmail.com
     port: 587
     properties:
@@ -22,7 +24,7 @@ spring:
 
 
 jwt:
-  secret: 127lg573im3179uwus1703ni228js642ca22z5a17483bf
+  secret: ${SECRET}
   lifetime: 48h
 
-WEBAPP_LINK: http://localhost:8080
+WEBAPP_LINK: ${WEBAPP_LINK}

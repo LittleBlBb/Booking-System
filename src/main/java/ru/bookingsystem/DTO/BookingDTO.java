@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class BookingDTO {
 
+    private Long id;
     private Long userId;
     private Long resourceId;
     private LocalDateTime startTime;
@@ -17,7 +18,8 @@ public class BookingDTO {
 
     public BookingDTO(Booking booking){
 
-        this.userId = booking.getId();
+        this.id = booking.getId();
+        this.userId = booking.getUser().getId();
         this.resourceId = booking.getResource().getId();
         this.startTime = booking.getStartTime();
         this.endTime = booking.getEndTime();
