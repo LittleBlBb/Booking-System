@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ru.bookingsystem.DTO.CompanyDTO;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.entity.Company;
@@ -109,5 +110,14 @@ public class CompanyServiceImpl implements CompanyService {
         userRepo.saveAll(users);
 
         companyRepo.deleteById(id);
+    }
+
+    @Override
+    public List<UserResponseDTO> getAllUsersByCompanyId(Long id) {
+
+        return userRepo.getAllByCompanyId(id)
+                .stream()
+                .map(UserResponseDTO::new)
+                .toList();
     }
 }

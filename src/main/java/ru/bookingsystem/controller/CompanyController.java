@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.CompanyDTO;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.service.interfaces.CompanyService;
@@ -71,5 +72,11 @@ public class CompanyController {
     public void deleteById(Authentication authentication, @RequestParam Long id){
 
         companyService.deleteById(authentication, id);
+    }
+
+    @GetMapping("/{id}/users")
+    public List<UserResponseDTO> getAllUsersByCompany(@PathVariable Long id){
+
+        return companyService.getAllUsersByCompanyId(id);
     }
 }

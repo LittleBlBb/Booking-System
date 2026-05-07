@@ -5,4 +5,6 @@ import ru.bookingsystem.entity.CompanySettings;
 
 public interface CompanySettingsRepo extends JpaRepository<CompanySettings, Long> {
     CompanySettings findCompanySettingsByCompanyId(Long companyId);
+
+    CompanySettings getByCompanyId(Long id);
 }

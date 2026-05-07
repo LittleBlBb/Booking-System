@@ -222,4 +222,6 @@ export class MyBookingsComponent implements OnInit {
     this.banner = null;
     this.bannerKind = null;
   }
+
+  goAdmin() { this.router.navigate(['/admin']); }
 }

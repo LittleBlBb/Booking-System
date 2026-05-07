@@ -1,9 +1,11 @@
 package ru.bookingsystem.DTO;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.bookingsystem.entity.ResourceType;
 
 @Data
+@NoArgsConstructor
 public class ResourceTypeDTO {
 
     private Long id;

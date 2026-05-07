@@ -1,2 +1,323 @@
-<h1>ADMIN PANEL</h1>
-<p>Only for ADMIN/OWNER</p>
+<div class="h-screen w-full bg-gray-50 flex flex-row overflow-hidden">
+
+  <!-- REMOVE USER MODAL -->
+  <div *ngIf="showRemoveUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" (click)="closeRemoveUserModal()">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-center w-14 h-14 bg-red-50 rounded-full mx-auto mb-4">
+        <iconify-icon icon="lucide:user-x" class="text-2xl text-red-500"></iconify-icon>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Удалить из компании?</h3>
+      <p class="text-sm text-gray-500 text-center mb-6" *ngIf="removeUserTarget">
+        Пользователь <span class="font-semibold text-gray-800">{{ removeUserTarget.username }}</span> будет исключён из организации.
+      </p>
+      <div class="flex gap-3">
+        <button (click)="closeRemoveUserModal()" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">Отмена</button>
+        <button (click)="confirmRemoveUser()" class="flex-1 py-2.5 bg-red-500 hover:opacity-90 text-white font-semibold rounded-lg transition-opacity">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCE MODAL -->
+  <div *ngIf="showResourceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" (click)="closeResourceModal()">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4" (click)="$event.stopPropagation()">
+      <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-gray-900">{{ editingResource ? 'Редактировать ресурс' : 'Новый ресурс' }}</h3>
+        <button (click)="closeResourceModal()" class="p-2 hover:bg-gray-100 rounded-full"><iconify-icon icon="lucide:x" class="text-xl text-gray-400"></iconify-icon></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Название</label>
+          <input [(ngModel)]="resourceForm.name" type="text" class="w-full px-4 py-2.5 bg-gray-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" [class.border-red-400]="resourceFormErrors.name" [class.border-gray-200]="!resourceFormErrors.name" />
+          <p class="text-red-500 text-xs mt-1" *ngIf="resourceFormErrors.name">{{ resourceFormErrors.name }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Описание</label>
+          <textarea [(ngModel)]="resourceForm.description" rows="3" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Тип ресурса</label>
+          <select [(ngModel)]="resourceForm.resourceTypeId" class="w-full px-4 py-2.5 bg-gray-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" [class.border-red-400]="resourceFormErrors.type" [class.border-gray-200]="!resourceFormErrors.type">
+            <option *ngFor="let t of resourceTypes" [value]="t.id">{{ t.name }}</option>
+          </select>
+          <p class="text-red-500 text-xs mt-1" *ngIf="resourceFormErrors.type">{{ resourceFormErrors.type }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Количество</label>
+          <input [(ngModel)]="resourceForm.quantity" type="number" min="1" class="w-full px-4 py-2.5 bg-gray-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" [class.border-red-400]="resourceFormErrors.quantity" [class.border-gray-200]="!resourceFormErrors.quantity" />
+          <p class="text-red-500 text-xs mt-1" *ngIf="resourceFormErrors.quantity">{{ resourceFormErrors.quantity }}</p>
+        </div>
+      </div>
+      <div class="p-6 border-t border-gray-100 flex gap-3">
+        <button (click)="closeResourceModal()" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">Отмена</button>
+        <button (click)="saveResource()" [disabled]="resourceSaving" class="flex-1 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-semibold rounded-lg disabled:opacity-50">
+          {{ resourceSaving ? 'Сохранение...' : 'Сохранить' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE RESOURCE MODAL -->
+  <div *ngIf="showDeleteResourceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" (click)="closeDeleteResource()">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-center w-14 h-14 bg-red-50 rounded-full mx-auto mb-4">
+        <iconify-icon icon="lucide:trash-2" class="text-2xl text-red-500"></iconify-icon>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Удалить ресурс?</h3>
+      <p class="text-sm text-gray-500 text-center mb-6" *ngIf="deleteResourceTarget">
+        Ресурс <span class="font-semibold text-gray-800">{{ deleteResourceTarget.name }}</span> будет удалён безвозвратно.
+      </p>
+      <div class="flex gap-3">
+        <button (click)="closeDeleteResource()" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">Отмена</button>
+        <button (click)="confirmDeleteResource()" class="flex-1 py-2.5 bg-red-500 hover:opacity-90 text-white font-semibold rounded-lg">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col shrink-0 h-full">
+    <div class="p-6 flex items-center gap-3">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <iconify-icon icon="lucide:zap" class="text-xl"></iconify-icon>
+      </div>
+      <span class="font-bold text-xl tracking-tight">{{ me?.companyName || '...' }}</span>
+    </div>
+
+    <nav class="flex-1 px-4 space-y-1 mt-4">
+      <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 mb-2">Общее</p>
+      <a (click)="goDashboard()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+        <iconify-icon icon="lucide:layout-dashboard" class="text-xl"></iconify-icon>
+        <span>Панель управления</span>
+      </a>
+      <a (click)="goMyBookings()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+        <iconify-icon icon="lucide:calendar" class="text-xl"></iconify-icon>
+        <span>Мои бронирования</span>
+      </a>
+
+      <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 mt-6 mb-2">Администрирование</p>
+      <a (click)="setTab('settings')" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer" [ngClass]="activeTab === 'settings' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 font-medium' : 'text-slate-400 hover:text-white hover:bg-white/5'">
+        <iconify-icon icon="lucide:settings" class="text-xl"></iconify-icon>
+        <span>Настройки компании</span>
+      </a>
+      <a (click)="setTab('resources')" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer" [ngClass]="activeTab === 'resources' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 font-medium' : 'text-slate-400 hover:text-white hover:bg-white/5'">
+        <iconify-icon icon="lucide:layers" class="text-xl"></iconify-icon>
+        <span>Ресурсы</span>
+      </a>
+      <a (click)="setTab('users')" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer" [ngClass]="activeTab === 'users' ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 font-medium' : 'text-slate-400 hover:text-white hover:bg-white/5'">
+        <iconify-icon icon="lucide:users" class="text-xl"></iconify-icon>
+        <span>Пользователи</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/10">
+      <div (click)="goProfile()" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold">
+          {{ me?.username?.slice(0, 2)?.toUpperCase() || '?' }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold truncate">{{ me?.username || '...' }}</p>
+          <p class="text-xs text-slate-400 truncate">{{ me?.email || '' }}</p>
+        </div>
+        <iconify-icon icon="lucide:log-out" class="text-slate-400 hover:text-red-400 transition-colors" (click)="$event.stopPropagation(); logout()"></iconify-icon>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 overflow-y-auto p-8">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- BANNER -->
+      <div *ngIf="banner" class="flex items-center gap-3 px-5 py-4 text-sm rounded-xl border mb-6" [ngClass]="{ 'bg-green-50 border-green-200 text-green-800': bannerKind === 'success', 'bg-red-50 border-red-200 text-red-800': bannerKind === 'error' }">
+        <span>{{ bannerKind === 'success' ? '✅' : '❌' }}</span>
+        <span class="flex-1 font-medium">{{ banner }}</span>
+        <button (click)="closeBanner()" class="opacity-50 hover:opacity-100">✕</button>
+      </div>
+
+      <!-- ==================== SETTINGS ==================== -->
+      <ng-container *ngIf="activeTab === 'settings'">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <div class="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-1">
+              <iconify-icon icon="lucide:shield-check"></iconify-icon> Панель администратора
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Настройки компании</h1>
+          </div>
+          <button (click)="saveSettings()" [disabled]="settingsSaving" class="px-6 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-lg disabled:opacity-50 transition-opacity">
+            {{ settingsSaving ? 'Сохранение...' : 'Сохранить изменения' }}
+          </button>
+        </div>
+
+        <!-- Ограничения бронирования -->
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+          <h2 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+            <iconify-icon icon="lucide:lock" class="text-indigo-600"></iconify-icon>
+            Ограничения бронирования
+          </h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Макс. длительность (мин)</label>
+              <input [(ngModel)]="settingsForm.maxBookingDurationMinutes" type="number" min="1" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Макс. активных бронирований</label>
+              <input [(ngModel)]="settingsForm.maxBookingsPerUser" type="number" min="1" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Рабочее время -->
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+          <h2 class="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
+            <iconify-icon icon="lucide:clock" class="text-indigo-600"></iconify-icon>
+            Рабочее время
+          </h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Начало рабочего дня</label>
+              <input [(ngModel)]="settingsForm.workStart" type="time" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Конец рабочего дня</label>
+              <input [(ngModel)]="settingsForm.workEnd" type="time" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="p-6 bg-red-50 border border-red-200 rounded-2xl">
+          <h3 class="text-sm font-bold text-red-600 uppercase tracking-widest mb-2">Опасная зона</h3>
+          <p class="text-xs text-red-500 mb-4">Удаление компании недоступно. Обратитесь в поддержку.</p>
+          <button class="w-full py-2 bg-red-100 text-red-400 text-sm font-bold rounded-lg border border-red-200 cursor-not-allowed opacity-50" disabled>
+            Удалить компанию
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- ==================== RESOURCES ==================== -->
+      <ng-container *ngIf="activeTab === 'resources'">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Управление ресурсами</h1>
+            <p class="text-gray-500 mt-1">Добавляйте, редактируйте или удаляйте ресурсы компании.</p>
+          </div>
+          <button (click)="openCreateResource()" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-xl transition-opacity">
+            <iconify-icon icon="lucide:plus" class="text-xl"></iconify-icon>
+            Добавить ресурс
+          </button>
+        </div>
+
+        <!-- Типы ресурсов -->
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+          <h2 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <iconify-icon icon="lucide:tag" class="text-indigo-600"></iconify-icon>
+            Типы ресурсов
+          </h2>
+
+          <div class="space-y-2 mb-4">
+            <div *ngFor="let type of resourceTypes" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <ng-container *ngIf="editTypeId === type.id; else viewType">
+                <input [(ngModel)]="editTypeName" type="text" class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400" />
+                <button (click)="saveEditType(type)" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:opacity-90">Сохранить</button>
+                <button (click)="cancelEditType()" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200">Отмена</button>
+              </ng-container>
+              <ng-template #viewType>
+                <span class="flex-1 text-sm font-medium text-gray-900">{{ type.name }}</span>
+                <button (click)="startEditType(type)" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded transition-colors"><iconify-icon icon="lucide:pencil" class="text-base"></iconify-icon></button>
+                <button (click)="deleteResourceType(type)" class="p-1.5 text-gray-400 hover:text-red-500 rounded transition-colors"><iconify-icon icon="lucide:trash-2" class="text-base"></iconify-icon></button>
+              </ng-template>
+            </div>
+            <p *ngIf="resourceTypes.length === 0" class="text-sm text-gray-400 text-center py-2">Нет типов ресурсов</p>
+          </div>
+
+          <div class="flex gap-2">
+            <input [(ngModel)]="newTypeName" type="text" placeholder="Название нового типа" class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400" (keyup.enter)="addResourceType()" />
+            <button (click)="addResourceType()" class="px-4 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-lg transition-opacity">
+              <iconify-icon icon="lucide:plus" class="text-lg"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Список ресурсов -->
+        <div *ngIf="resourcesLoading" class="flex justify-center py-12 text-gray-400">
+          <iconify-icon icon="lucide:loader" class="text-3xl animate-spin"></iconify-icon>
+        </div>
+
+        <div *ngIf="!resourcesLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let resource of resources" class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                <iconify-icon icon="lucide:box" class="text-xl"></iconify-icon>
+              </div>
+              <div class="flex gap-1">
+                <button (click)="openEditResource(resource)" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><iconify-icon icon="lucide:pencil" class="text-base"></iconify-icon></button>
+                <button (click)="openDeleteResource(resource)" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><iconify-icon icon="lucide:trash-2" class="text-base"></iconify-icon></button>
+              </div>
+            </div>
+            <h3 class="font-bold text-gray-900 mb-1">{{ resource.name }}</h3>
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ resource.description }}</p>
+            <div class="flex items-center justify-between text-xs text-gray-400">
+              <span>Тип: {{ getTypeName(resource.type_id) }}</span>
+              <span>Кол-во: {{ resource.quantity }}</span>
+            </div>
+          </div>
+
+          <button (click)="openCreateResource()" class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-indigo-300 hover:text-indigo-500 transition-colors">
+            <iconify-icon icon="lucide:plus-circle" class="text-3xl"></iconify-icon>
+            <span class="text-sm font-medium">Добавить ресурс</span>
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- ==================== USERS ==================== -->
+      <ng-container *ngIf="activeTab === 'users'">
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold text-gray-900">Пользователи и роли</h1>
+          <p class="text-gray-500 mt-1">Управляйте участниками компании и их правами доступа.</p>
+        </div>
+
+        <div *ngIf="usersLoading" class="flex justify-center py-12 text-gray-400">
+          <iconify-icon icon="lucide:loader" class="text-3xl animate-spin"></iconify-icon>
+        </div>
+
+        <div *ngIf="!usersLoading" class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div *ngIf="users.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+            <iconify-icon icon="lucide:users" class="text-4xl"></iconify-icon>
+            <p class="text-sm">Нет пользователей</p>
+          </div>
+
+          <div *ngFor="let user of users; let last = last" class="flex items-center gap-4 px-6 py-4" [class.border-b]="!last" [class.border-gray-100]="!last">
+            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
+              {{ user.username.slice(0, 2).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-900 truncate">
+                {{ user.username }}
+                <span *ngIf="isSelf(user)" class="ml-2 text-xs text-indigo-500 font-normal">(вы)</span>
+              </p>
+              <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
+            </div>
+
+            <select
+              [value]="user.role"
+              (change)="changeRole(user, $any($event.target).value)"
+              [disabled]="isSelf(user)"
+              class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option *ngFor="let r of roleOptions" [value]="r">{{ r }}</option>
+            </select>
+
+            <button
+              *ngIf="!isSelf(user)"
+              (click)="openRemoveUserModal(user)"
+              class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              title="Удалить из компании"
+            >
+              <iconify-icon icon="lucide:user-x" class="text-xl"></iconify-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </main>
+</div>

@@ -7,8 +7,6 @@ import ru.bookingsystem.DTO.CompanySettingsDTO;
 import ru.bookingsystem.DTO.requests.SetCompanySettingsRequest;
 import ru.bookingsystem.entity.CompanySettings;
 import ru.bookingsystem.entity.User;
-import ru.bookingsystem.entity.constant.Role;
-import ru.bookingsystem.exception.NoPermissionException;
 import ru.bookingsystem.repository.CompanySettingsRepo;
 import ru.bookingsystem.service.interfaces.CompanySettingsService;
 import ru.bookingsystem.service.interfaces.UserService;
@@ -16,7 +14,6 @@ import ru.bookingsystem.service.interfaces.UserService;
 @Service
 @RequiredArgsConstructor
 public class CompanySettingsServiceImpl implements CompanySettingsService {
-
 
     private final CompanySettingsRepo companySettingsRepo;
     private final UserService userService;
@@ -35,16 +32,32 @@ public class CompanySettingsServiceImpl implements CompanySettingsService {
     }
 
     @Override
-    public CompanySettingsDTO setSettings(Authentication authentication, SetCompanySettingsRequest request) {
+    public CompanySettingsDTO addSettings(Authentication authentication, SetCompanySettingsRequest request) {
 
         User user = userService.findByUsername(authentication.getName());
-
-        if (user.getRole() == Role.USER) throw new NoPermissionException();
 
         CompanySettings settings = new CompanySettings();
         settings.setCompany(user.getCompany());
         settings.setMaxBookingsPerUser(request.getMaxBookingsPerUser());
         settings.setMaxBookingDurationMinutes(request.getMaxBookingDurationMinutes());
+        settings.setWorkStart(request.getWorkStart());
+        settings.setWorkEnd(request.getWorkEnd());
+
+        return new CompanySettingsDTO(companySettingsRepo.save(settings));
+    }
+
+    @Override
+    public CompanySettingsDTO updateSettings(Authentication authentication, SetCompanySettingsRequest request){
+
+        User user = userService.findByUsername(authentication.getName());
+
+        CompanySettings settings = companySettingsRepo.findCompanySettingsByCompanyId(user.getCompany().getId());
+
+        settings.setCompany(user.getCompany());
+        settings.setMaxBookingsPerUser(request.getMaxBookingsPerUser());
+        settings.setMaxBookingDurationMinutes(request.getMaxBookingDurationMinutes());
+        settings.setWorkStart(request.getWorkStart());
+        settings.setWorkEnd(request.getWorkEnd());
 
         return new CompanySettingsDTO(companySettingsRepo.save(settings));
     }

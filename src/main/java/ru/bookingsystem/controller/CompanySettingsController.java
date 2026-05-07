@@ -22,13 +22,13 @@ public class CompanySettingsController {
         return companySettingsService.getSettings(authentication);
     }
 
-    @PostMapping("/setSettings")
+    @PostMapping("/addSettings")
     public CompanySettingsDTO createSettings(Authentication authentication, @RequestBody SetCompanySettingsRequest request){
-        return companySettingsService.setSettings(authentication, request);
+        return companySettingsService.addSettings(authentication, request);
     }
 
-    @PutMapping("/setSettings")
+    @PatchMapping("/updateSettings")
     public CompanySettingsDTO editSettings(Authentication authentication, @RequestBody SetCompanySettingsRequest request){
-        return companySettingsService.setSettings(authentication, request);
+        return companySettingsService.updateSettings(authentication, request);
     }
 }

@@ -8,7 +8,9 @@ import ru.bookingsystem.entity.CompanySettings;
 public interface CompanySettingsService {
     CompanySettingsDTO getSettings(Authentication authentication);
 
-    CompanySettingsDTO setSettings(Authentication authentication, SetCompanySettingsRequest request);
+    CompanySettingsDTO addSettings(Authentication authentication, SetCompanySettingsRequest request);
+
+    CompanySettingsDTO updateSettings(Authentication authentication, SetCompanySettingsRequest request);
 
     CompanySettings findSettingsByCompanyId(Long id);
 }

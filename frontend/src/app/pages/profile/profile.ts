@@ -181,4 +181,6 @@ export class ProfileComponent {
   }
 
   goMyBookings() { this.router.navigate(['/my-bookings']); }
+
+  goAdmin() { this.router.navigate(['/admin']); }
 }

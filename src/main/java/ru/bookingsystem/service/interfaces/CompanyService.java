@@ -2,6 +2,7 @@ package ru.bookingsystem.service.interfaces;
 
 import org.springframework.security.core.Authentication;
 import ru.bookingsystem.DTO.CompanyDTO;
+import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.entity.Company;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
@@ -19,4 +20,6 @@ public interface CompanyService {
     CompanyDTO editCompany(Authentication authentication, CompanyUpdateRequest request);
 
     void deleteById(Authentication authentication, Long id);
+
+    List<UserResponseDTO> getAllUsersByCompanyId(Long id);
 }

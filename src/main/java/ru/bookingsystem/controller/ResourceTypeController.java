@@ -2,6 +2,7 @@ package ru.bookingsystem.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.ResourceTypeDTO;
 import ru.bookingsystem.DTO.requests.ResourceTypeCreateRequest;
@@ -30,8 +31,20 @@ public class ResourceTypeController {
     }
 
     @GetMapping("/findAll")
-    public List<ResourceTypeDTO> findAll(){
+    public List<ResourceTypeDTO> findAll(Authentication authentication){
 
-        return resourceTypeService.findAll();
+        return resourceTypeService.findAll(authentication);
+    }
+
+    @PutMapping("/update")
+    public ResourceTypeDTO updateResource(Authentication authentication, @RequestBody ResourceTypeDTO request){
+
+        return resourceTypeService.updateById(authentication, request);
+    }
+
+    @DeleteMapping("/delete")
+    public void deleteResourceType(Long id){
+
+        resourceTypeService.deleteById(id);
     }
 }

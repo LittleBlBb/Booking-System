@@ -34,14 +34,17 @@ public class SecurityConfig {
             "/api/companies/create", "/api/users/me", "/api/resources/findResourceById", "/api/resources/{companyId}/findAll/",
             "/api/company/join-request", "/api/users/updateUser", "/api/users/delete", "/api/users/leave",
             "/api/company_settings/getCompanySettings", "/api/bookings/{resourceId}/bookings", "/api/bookings/{companyId}/all",
-            "/api/bookings/{userId}/allByUser", "/api/bookings/cancel"
+            "/api/bookings/{userId}/allByUser", "/api/bookings/cancel",
             
     };
 
     // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
     private static final String[] ONLY_ADMIN_URL = {
             "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
-            "/api/resources/addResource", "/api/company_settings/setSettings",
+            "/api/resources/addResource", "/api/company_settings/addSettings", "/api/company_settings/updateSettings", "/api/companies/{id}/users",
+            "/api/users/updateUserRole", "/api/users/deleteUserFromCompany", "/api/resource_types/findAll", "/api/resource_types/addResourceType",
+            "/api/resource_types/update", "/api/resource_types/delete", "/api/resources/editResource", "/api/resources/deleteById",
+
     };
 
 //    private static final String[] ONLY_OWNER_URL = {

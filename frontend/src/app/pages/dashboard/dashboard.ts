@@ -467,5 +467,8 @@ export class DashboardComponent implements OnInit {
     this.banner = null;
     this.bannerKind = null;
   }
+
   goMyBookings() { this.router.navigate(['/my-bookings']); }
+
+  goAdmin() { this.router.navigate(['/admin']); }
 }
