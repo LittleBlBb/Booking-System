@@ -42,7 +42,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         Company company = companyRepo.findById(user.getCompany().getId()).orElseThrow(() ->
                 new NotFoundException("Company with id " + user.getCompany().getId() + " not found"));
 
-        return companyJoinRequestRepo.findAllByCompany(company)
+        return companyJoinRequestRepo.findAllByCompanyId(company.getId())
                 .stream()
                 .map(CompanyJoinRequestDTO::new)
                 .toList();
@@ -62,7 +62,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         Company company = companyRepo.findById(id).orElseThrow(()->
                 new NotFoundException("company with id " + id + " not found"));
 
-        List<CompanyJoinRequest> requests = companyJoinRequestRepo.findByUserAndCompany(user, company);
+        List<CompanyJoinRequest> requests = companyJoinRequestRepo.findByUserIdAndCompanyId(user.getId(), company.getId());
         for (CompanyJoinRequest request : requests){
             if (request.getStatus().equals(RequestStatus.PENDING)) throw new AlreadyInCompanyException("You have already sent a request to this company");
         }
@@ -83,7 +83,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         User admin = userRepo.findByUsername(authentication.getName()).orElseThrow(() ->
                 new NotFoundException("User " + authentication.getName()  + " not found"));
 
-        if (!admin.getRole().equals(Role.ADMIN)) throw new NoPermissionException();
+        if (admin.getRole().equals(Role.USER)) throw new NoPermissionException();
 
         CompanyJoinRequest request = companyJoinRequestRepo.findById(id).orElseThrow(() ->
                 new NotFoundException("join request with " + id  + " not found"));
@@ -102,6 +102,8 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         userRepo.save(user);
 
         companyJoinRequestRepo.save(request);
+
+        companyJoinRequestRepo.deleteAllByUserId(user.getId());
     }
 
     @Override
@@ -111,7 +113,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         User admin = userRepo.findByUsername(authentication.getName()).orElseThrow(() ->
                 new NotFoundException("User " + authentication.getName()  + " not found"));
 
-        if (!admin.getRole().equals(Role.ADMIN)) throw new NoPermissionException();
+        if (admin.getRole().equals(Role.USER)) throw new NoPermissionException();
 
         CompanyJoinRequest request = companyJoinRequestRepo.findById(id).orElseThrow(() ->
                 new NotFoundException("join request with " + id  + " not found"));
@@ -121,5 +123,24 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         request.setStatus(RequestStatus.REJECTED);
 
         companyJoinRequestRepo.save(request);
+    }
+
+    @Override
+    public List<CompanyJoinRequestDTO> getAllByIdAndStatus(String name, RequestStatus status) {
+
+        User user = userRepo.findByUsername(name).orElseThrow(() ->
+                new NotFoundException("User " + name + " not found"));
+
+        if (!user.getRole().equals(Role.ADMIN)){
+            throw new NoPermissionException();
+        }
+
+        Company company = companyRepo.findById(user.getCompany().getId()).orElseThrow(() ->
+                new NotFoundException("Company with id " + user.getCompany().getId() + " not found"));
+
+        return companyJoinRequestRepo.findAllByCompanyIdAndStatus(company.getId(), status)
+                .stream()
+                .map(CompanyJoinRequestDTO::new)
+                .toList();
     }
 }

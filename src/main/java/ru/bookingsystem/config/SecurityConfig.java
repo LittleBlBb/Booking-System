@@ -38,8 +38,7 @@ public class SecurityConfig {
             
     };
 
-    // Здесь должны будут быть ручки для удаления пользователя из компании, принудительная отмена бронирования, просмотр логов по компании.
-    private static final String[] ONLY_ADMIN_URL = {
+    private static final String[] ADMIN_OR_OWNER_URL = {
             "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
             "/api/resources/addResource", "/api/company_settings/addSettings", "/api/company_settings/updateSettings", "/api/companies/{id}/users",
             "/api/users/updateUserRole", "/api/users/deleteUserFromCompany", "/api/resource_types/findAll", "/api/resource_types/addResourceType",
@@ -47,10 +46,9 @@ public class SecurityConfig {
 
     };
 
-//    private static final String[] ONLY_OWNER_URL = {
-//            "/api/requests", "/api/requests/reject", "/api/requests/approve", "/api/invite/getInviteLink",
-//            "/api/resources/addResource",
-//    };
+    private static final String[] ONLY_OWNER_URL = {
+            "/api/companies/deleteById"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider provider){
@@ -63,8 +61,8 @@ public class SecurityConfig {
                         auth -> auth
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers(WHITE_LIST_URL).permitAll()
-//                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
-                                .requestMatchers(ONLY_ADMIN_URL).hasRole("ADMIN")
+                                .requestMatchers(ADMIN_OR_OWNER_URL).hasAnyRole("OWNER", "ADMIN")
+                                .requestMatchers(ONLY_OWNER_URL).hasRole("OWNER")
                                 .requestMatchers(AUTHENTICATION_REQUIRED_URL).authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)

@@ -18,6 +18,15 @@ export interface ResourceType {
   name: string;
 }
 
+export interface JoinRequest {
+  id: number;
+  userId: number;
+  username: string;
+  companyId: number;
+  status: string;
+  createdAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
 
@@ -38,6 +47,11 @@ export class AdminService {
     return this.http.patch<CompanySettings>(`${this.apiUrl}/company_settings/updateSettings`, data);
   }
 
+  // --- Companies ---
+  deleteCompany(companyId: number) {
+    return this.http.delete(`${this.apiUrl}/companies/deleteById?id=${companyId}`);
+  }
+
   // --- Users ---
   getCompanyUsers(companyId: number) {
     return this.http.get<CompanyUser[]>(`${this.apiUrl}/companies/${companyId}/users`);
@@ -49,6 +63,19 @@ export class AdminService {
 
   removeUserFromCompany(userId: number) {
     return this.http.delete<CompanyUser>(`${this.apiUrl}/users/deleteUserFromCompany?id=${userId}`);
+  }
+
+  // --- Join requests ---
+  getJoinRequests() {
+    return this.http.get<JoinRequest[]>(`${this.apiUrl}/requests?status=PENDING`);
+  }
+
+  approveJoinRequest(id: number) {
+    return this.http.post<void>(`${this.apiUrl}/requests/approve?id=${id}`, null);
+  }
+
+  rejectJoinRequest(id: number) {
+    return this.http.post<void>(`${this.apiUrl}/requests/reject?id=${id}`, null);
   }
 
   // --- Resource types ---

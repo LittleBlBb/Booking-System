@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService, Me } from '../../core/services/auth.service';
-import { AdminService, CompanyUser, ResourceType } from '../../core/services/admin.service';
+import { AdminService, CompanyUser, ResourceType, JoinRequest } from '../../core/services/admin.service';
 import { ResourceService, Resource } from '../../core/services/resource.service';
 import { CompanySettings } from '../../core/services/booking.service';
 
@@ -33,9 +33,15 @@ export class AdminComponent implements OnInit {
   // --- Users ---
   users: CompanyUser[] = [];
   usersLoading = false;
-  roleOptions = ['USER', 'ADMIN', 'OWNER'];
+  roleOptions = ['USER', 'ADMIN'];
   showRemoveUserModal = false;
   removeUserTarget: CompanyUser | null = null;
+  showViewUserModal = false;
+  viewUserTarget: CompanyUser | null = null;
+
+  // --- Join requests ---
+  joinRequests: JoinRequest[] = [];
+  joinRequestsLoading = false;
 
   // --- Resource types ---
   resourceTypes: ResourceType[] = [];
@@ -53,6 +59,12 @@ export class AdminComponent implements OnInit {
   resourceSaving = false;
   showDeleteResourceModal = false;
   deleteResourceTarget: Resource | null = null;
+  showViewResourceModal = false;
+  viewResourceTarget: Resource | null = null;
+
+  // --- Delete company ---
+  showDeleteCompanyModal = false;
+  deletingCompany = false;
 
   banner: string | null = null;
   bannerKind: BannerType = null;
@@ -83,7 +95,10 @@ export class AdminComponent implements OnInit {
 
   setTab(tab: Tab) {
     this.activeTab = tab;
-    if (tab === 'users' && this.users.length === 0) this.loadUsers();
+    if (tab === 'users') {
+      if (this.users.length === 0) this.loadUsers();
+      this.loadJoinRequests();
+    }
     if (tab === 'resources' && this.resources.length === 0) this.loadResources();
   }
 
@@ -149,6 +164,7 @@ export class AdminComponent implements OnInit {
         const idx = this.users.findIndex(u => u.id === user.id);
         if (idx !== -1) this.users[idx] = updated;
         this.setBanner(`Роль ${updated.username} изменена на ${updated.role}`, 'success');
+        this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
@@ -165,16 +181,79 @@ export class AdminComponent implements OnInit {
     if (!this.removeUserTarget) return;
     const id = this.removeUserTarget.id;
     this.closeRemoveUserModal();
+    this.closeViewUserModal();
     this.adminService.removeUserFromCompany(id).subscribe({
       next: () => {
         this.users = this.users.filter(u => u.id !== id);
         this.setBanner('Пользователь удалён из компании', 'success');
+        this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
+  openViewUserModal(user: CompanyUser) {
+    this.viewUserTarget = user;
+    this.showViewUserModal = true;
+  }
+
+  closeViewUserModal() { this.showViewUserModal = false; this.viewUserTarget = null; }
+
   isSelf(user: CompanyUser): boolean { return user.id === this.me?.id; }
+
+  private normalizeRole(role: string | undefined | null): string {
+    if (!role) return '';
+    return role.replace(/^ROLE_/, '');
+  }
+
+  canManageUser(user: CompanyUser): boolean {
+    if (this.isSelf(user)) return false;
+    const roleRank: Record<string, number> = { USER: 1, ADMIN: 2, OWNER: 3 };
+    const myRank = roleRank[this.normalizeRole(this.me?.role)] ?? 0;
+    const theirRank = roleRank[this.normalizeRole(user.role)] ?? 0;
+    return myRank > theirRank;
+  }
+
+  get isOwner(): boolean {
+    return this.normalizeRole(this.me?.role) === 'OWNER';
+  }
+
+  // ---------------- JOIN REQUESTS ----------------
+
+  loadJoinRequests() {
+    this.joinRequestsLoading = true;
+    this.adminService.getJoinRequests().subscribe({
+      next: (r) => { this.joinRequests = r; this.joinRequestsLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.joinRequestsLoading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  approveRequest(request: JoinRequest) {
+    this.adminService.approveJoinRequest(request.id).subscribe({
+      next: () => {
+        this.joinRequests = this.joinRequests.filter(r => r.id !== request.id);
+        this.users = [];
+        this.loadUsers();
+        this.setBanner('Запрос одобрен — пользователь добавлен в компанию', 'success');
+      },
+      error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
+    });
+  }
+
+  rejectRequest(request: JoinRequest) {
+    this.adminService.rejectJoinRequest(request.id).subscribe({
+      next: () => {
+        this.joinRequests = this.joinRequests.filter(r => r.id !== request.id);
+        this.setBanner('Запрос отклонён', 'success');
+      },
+      error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
+    });
+  }
+
+  formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
 
   // ---------------- RESOURCE TYPES ----------------
 
@@ -187,7 +266,7 @@ export class AdminComponent implements OnInit {
   addResourceType() {
     if (!this.newTypeName.trim() || !this.me?.companyId) return;
     this.adminService.createResourceType(this.newTypeName.trim(), this.me.companyId).subscribe({
-      next: (t) => { this.resourceTypes.push(t); this.newTypeName = ''; this.setBanner('Тип добавлен', 'success'); },
+      next: (t) => { this.resourceTypes.push(t); this.newTypeName = ''; this.setBanner('Тип добавлен', 'success'); this.cdr.detectChanges(); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
@@ -203,6 +282,7 @@ export class AdminComponent implements OnInit {
         if (idx !== -1) this.resourceTypes[idx] = updated;
         this.editTypeId = null;
         this.setBanner('Тип обновлён', 'success');
+        this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
@@ -210,7 +290,11 @@ export class AdminComponent implements OnInit {
 
   deleteResourceType(type: ResourceType) {
     this.adminService.deleteResourceType(type.id).subscribe({
-      next: () => { this.resourceTypes = this.resourceTypes.filter(t => t.id !== type.id); this.setBanner('Тип удалён', 'success'); },
+      next: () => {
+        this.resourceTypes = this.resourceTypes.filter(t => t.id !== type.id);
+        this.setBanner('Тип удалён', 'success');
+        this.cdr.detectChanges();
+      },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
@@ -238,6 +322,7 @@ export class AdminComponent implements OnInit {
     this.resourceForm = { name: resource.name, description: resource.description, resourceTypeId: resource.type_id, quantity: resource.quantity };
     this.resourceFormErrors = {};
     this.showResourceModal = true;
+    this.showViewResourceModal = false;
   }
 
   closeResourceModal() { this.showResourceModal = false; this.editingResource = null; }
@@ -260,6 +345,7 @@ export class AdminComponent implements OnInit {
           this.resourceSaving = false;
           this.closeResourceModal();
           this.setBanner('Ресурс обновлён', 'success');
+          this.cdr.detectChanges();
         },
         error: (err: HttpErrorResponse) => { this.resourceSaving = false; this.setBanner(err.error?.message || 'Ошибка', 'error'); }
       });
@@ -270,6 +356,7 @@ export class AdminComponent implements OnInit {
           this.resourceSaving = false;
           this.closeResourceModal();
           this.setBanner('Ресурс создан', 'success');
+          this.cdr.detectChanges();
         },
         error: (err: HttpErrorResponse) => { this.resourceSaving = false; this.setBanner(err.error?.message || 'Ошибка', 'error'); }
       });
@@ -283,14 +370,53 @@ export class AdminComponent implements OnInit {
     if (!this.deleteResourceTarget) return;
     const id = this.deleteResourceTarget.id;
     this.closeDeleteResource();
+    this.closeViewResourceModal();
     this.adminService.deleteResource(id).subscribe({
-      next: () => { this.resources = this.resources.filter(r => r.id !== id); this.setBanner('Ресурс удалён', 'success'); },
+      next: () => {
+        this.resources = this.resources.filter(r => r.id !== id);
+        this.setBanner('Ресурс удалён', 'success');
+        this.cdr.detectChanges();
+      },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
+  openViewResourceModal(resource: Resource) {
+    this.viewResourceTarget = resource;
+    this.showViewResourceModal = true;
+  }
+
+  closeViewResourceModal() { this.showViewResourceModal = false; this.viewResourceTarget = null; }
+
+  openDeleteFromView(resource: Resource) {
+    this.deleteResourceTarget = resource;
+    this.showDeleteResourceModal = true;
+  }
+
   getTypeName(typeId: number): string {
     return this.resourceTypes.find(t => t.id === typeId)?.name || `Тип #${typeId}`;
+  }
+
+  // ---------------- DELETE COMPANY ----------------
+
+  openDeleteCompanyModal() { this.showDeleteCompanyModal = true; }
+  closeDeleteCompanyModal() { this.showDeleteCompanyModal = false; }
+
+  confirmDeleteCompany() {
+    if (!this.me?.companyId) return;
+    this.deletingCompany = true;
+    this.adminService.deleteCompany(this.me.companyId).subscribe({
+      next: () => {
+        this.deletingCompany = false;
+        this.authService.logout();
+        this.router.navigate(['/auth']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.deletingCompany = false;
+        this.closeDeleteCompanyModal();
+        this.setBanner(err.error?.message || 'Ошибка при удалении компании', 'error');
+      }
+    });
   }
 
   // ---------------- NAV ----------------

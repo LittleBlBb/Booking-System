@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.bookingsystem.DTO.CompanyJoinRequestDTO;
+import ru.bookingsystem.entity.constant.RequestStatus;
 import ru.bookingsystem.service.interfaces.CompanyJoinRequestService;
 
 import java.util.List;
@@ -33,9 +34,12 @@ public class RequestController {
 
 
     @GetMapping("/requests")
-    public List<CompanyJoinRequestDTO> getAllRequestsById(Authentication authentication){
+    public List<CompanyJoinRequestDTO> getAllRequestsById(Authentication authentication,
+                                                          @RequestParam(required = false) RequestStatus status){
 
-        return companyJoinRequestService.getAllById(authentication.getName());
+        return status == null
+                ? companyJoinRequestService.getAllById(authentication.getName())
+                : companyJoinRequestService.getAllByIdAndStatus(authentication.getName(), status);
     }
 
     @PostMapping("/company/join-request")
@@ -43,5 +47,4 @@ public class RequestController {
 
         return companyJoinRequestService.joinRequest(authentication, id);
     }
-
 }
