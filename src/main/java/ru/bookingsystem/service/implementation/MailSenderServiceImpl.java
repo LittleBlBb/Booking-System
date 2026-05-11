@@ -38,7 +38,7 @@ public class MailSenderServiceImpl implements MailSenderService {
 
         String message = String.format(
                 "Hello, %s! \n" +
-                        "Welcome to Booking System. Please visit next link: %s/api/activate/%s",
+                        "Welcome to Booking System. Please visit next link: %s/api/users/activate/%s",
                 username,
                 link,
                 code);

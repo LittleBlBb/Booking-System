@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService, Me } from '../../core/services/auth.service';
 import { ResourceService, Resource } from '../../core/services/resource.service';
 import { BookingService, CompanySettings, Booking } from '../../core/services/booking.service';
+import { AdminService, ResourceType } from '../../core/services/admin.service';
 
 type BannerType = 'success' | 'error' | null;
 
@@ -29,6 +30,7 @@ export class DashboardComponent implements OnInit {
   me: Me | null = null;
   resources: Resource[] = [];
   filteredResources: Resource[] = [];
+  resourceTypes: ResourceType[] = [];
   settings: CompanySettings | null = null;
   allBookings: Booking[] = [];
 
@@ -64,6 +66,7 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private resourceService: ResourceService,
     private bookingService: BookingService,
+    private adminService: AdminService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {}
@@ -93,13 +96,21 @@ export class DashboardComponent implements OnInit {
 
   loadAll(companyId: number) {
     let done = 0;
-    const check = () => { if (++done === 3) { this.loading = false; this.cdr.detectChanges(); } };
+    const check = () => { if (++done === 4) { this.loading = false; this.cdr.detectChanges(); } };
 
     this.resourceService.getResources(companyId).subscribe({
       next: (list) => {
         this.resources = list;
         this.filteredResources = list;
         this.allTypes = [...new Set(list.map(r => String(r.type_id)))];
+        check();
+      },
+      error: () => check()
+    });
+
+    this.adminService.getResourceTypes().subscribe({
+      next: (types) => {
+        this.resourceTypes = types;
         check();
       },
       error: () => check()
@@ -116,6 +127,10 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  getTypeName(typeId: number): string {
+    return this.resourceTypes.find(t => t.id === typeId)?.name || `Тип #${typeId}`;
+  }
+
   // ---------------- RESOURCE STATUS ----------------
 
   getResourceStatus(resource: Resource): ResourceStatus {
@@ -126,14 +141,12 @@ export class DashboardComponent implements OnInit {
       .map(b => ({ start: new Date(b.startTime), end: new Date(b.endTime) }))
       .sort((a, b) => a.start.getTime() - b.start.getTime());
 
-    // Активная бронь прямо сейчас
     const active = bookings.find(b => b.start <= now && b.end > now);
     if (active) {
       const diffMs = active.end.getTime() - now.getTime();
       const diffMin = Math.round(diffMs / 60000);
 
       if (diffMin < 60) {
-        // Скоро освободится
         return {
           label: 'Скоро',
           nextLabel: `Свободно через ${diffMin} мин`,
@@ -141,7 +154,6 @@ export class DashboardComponent implements OnInit {
           dotClass: 'bg-amber-500'
         };
       } else {
-        // Занято надолго
         const h = active.end.getHours().toString().padStart(2, '0');
         const m = active.end.getMinutes().toString().padStart(2, '0');
         return {
@@ -153,7 +165,6 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    // Нет активной брони — свободно
     const next = bookings.find(b => b.start > now);
     let nextLabel = 'Свободно сейчас';
     if (next) {
@@ -179,8 +190,8 @@ export class DashboardComponent implements OnInit {
 
   onSearch() { this.applyFilters(); }
 
-  selectType(type: string) {
-    this.selectedType = this.selectedType === type ? '' : type;
+  selectType(typeId: string) {
+    this.selectedType = this.selectedType === typeId ? '' : typeId;
     this.applyFilters();
   }
 
@@ -469,6 +480,5 @@ export class DashboardComponent implements OnInit {
   }
 
   goMyBookings() { this.router.navigate(['/my-bookings']); }
-
   goAdmin() { this.router.navigate(['/admin']); }
 }

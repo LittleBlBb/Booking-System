@@ -149,7 +149,7 @@ export class ProfileComponent {
     });
   }
 
-  // ---------------- UTILS ----------------
+  // ---------------- NAV ----------------
 
   logout() {
     this.authService.logout();
@@ -159,6 +159,20 @@ export class ProfileComponent {
   goDashboard() {
     this.router.navigate(['/dashboard']);
   }
+
+  goMyBookings() {
+    this.router.navigate(['/my-bookings']);
+  }
+
+  goAdmin() {
+    this.router.navigate(['/admin']);
+  }
+
+  goCompanySelect() {
+    this.router.navigate(['/company-select']);
+  }
+
+  // ---------------- BANNER ----------------
 
   setBanner(message: string, type: BannerType) {
     if (this.bannerTimer) clearTimeout(this.bannerTimer);
@@ -179,8 +193,4 @@ export class ProfileComponent {
     this.bannerKind = null;
     this.cdr.detectChanges();
   }
-
-  goMyBookings() { this.router.navigate(['/my-bookings']); }
-
-  goAdmin() { this.router.navigate(['/admin']); }
 }

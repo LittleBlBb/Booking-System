@@ -14,7 +14,7 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     map(me => {
       const target = route.routeConfig?.path;
 
-      if (!me.companyId && target !== 'company-select') {
+      if (!me.companyId && target !== 'company-select' && target !== 'profile') {
         return router.parseUrl('/company-select');
       }
 

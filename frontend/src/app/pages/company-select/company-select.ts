@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CompanyService, Company } from '../../core/services/company.service';
+import { AuthService, Me } from '../../core/services/auth.service';
 
 type BannerType = 'success' | 'error' | 'info' | null;
 
@@ -16,6 +17,8 @@ type BannerType = 'success' | 'error' | 'info' | null;
   templateUrl: './company-select.html',
 })
 export class CompanySelectComponent implements OnInit {
+
+  me: Me | null = null;
 
   // --- Список компаний ---
   companies: Company[] = [];
@@ -38,10 +41,15 @@ export class CompanySelectComponent implements OnInit {
   constructor(
     private router: Router,
     private companyService: CompanyService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    this.authService.getMe().subscribe({
+      next: (me) => { this.me = me; this.cdr.detectChanges(); },
+      error: () => { this.authService.logout(); this.router.navigate(['/auth']); }
+    });
     this.loadCompanies();
   }
 
@@ -108,6 +116,17 @@ export class CompanySelectComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ---------------- NAV ----------------
+
+  goProfile() {
+    this.router.navigate(['/profile']);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 
   // ---------------- BANNER ----------------
