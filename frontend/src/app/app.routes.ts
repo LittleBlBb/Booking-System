@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { guestGuard } from './core/guards/guest.guard';
 import { authGuard } from './core/guards/auth.guard';
+import {ActivateComponent} from './pages/activate/activate';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
@@ -46,6 +47,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/admin').then(m => m.AdminComponent)
   },
+
+  { path: 'activate/:token', component: ActivateComponent },
 
   { path: '**', redirectTo: 'auth' }
 ];
