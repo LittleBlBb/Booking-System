@@ -6,6 +6,7 @@ import { AuthService, Me } from '../../core/services/auth.service';
 import { ResourceService, Resource } from '../../core/services/resource.service';
 import { BookingService, CompanySettings, Booking } from '../../core/services/booking.service';
 import { AdminService, ResourceType } from '../../core/services/admin.service';
+import { getIconById } from '../../core/utils/icons';
 
 type BannerType = 'success' | 'error' | null;
 
@@ -129,6 +130,11 @@ export class DashboardComponent implements OnInit {
 
   getTypeName(typeId: number): string {
     return this.resourceTypes.find(t => t.id === typeId)?.name || `Тип #${typeId}`;
+  }
+
+  getTypeIcon(typeId: number): string {
+    const type = this.resourceTypes.find(t => t.id === typeId);
+    return getIconById(type?.iconId);
   }
 
   // ---------------- RESOURCE STATUS ----------------
@@ -416,7 +422,7 @@ export class DashboardComponent implements OnInit {
   sliderEndTime(): string {
     const [wh, wm] = this.effectiveWorkStart().split(':').map(Number);
     const total = wh * 60 + wm + this.sliderEnd;
-    return `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`;
+    return `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '00')}`;
   }
 
   durationLabel(): string {

@@ -116,7 +116,7 @@
       <div class="p-6" *ngIf="viewResourceTarget">
         <div class="flex items-center gap-4 mb-6">
           <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-            <iconify-icon icon="lucide:box" class="text-2xl"></iconify-icon>
+            <iconify-icon [icon]="getTypeIcon(viewResourceTarget.type_id)" class="text-2xl"></iconify-icon>
           </div>
           <div>
             <p class="text-xl font-bold text-gray-900">{{ viewResourceTarget.name }}</p>
@@ -187,6 +187,36 @@
         <button (click)="closeDeleteCompanyModal()" [disabled]="deletingCompany" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50">Отмена</button>
         <button (click)="confirmDeleteCompany()" [disabled]="deletingCompany" class="flex-1 py-2.5 bg-red-500 hover:opacity-90 text-white font-semibold rounded-lg transition-opacity disabled:opacity-50">
           {{ deletingCompany ? 'Удаление...' : 'Удалить' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ICON PICKER MODAL -->
+  <div
+    *ngIf="showIconPicker"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+    (click)="closeIconPicker()"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-base font-bold text-gray-900">Выбрать иконку</h3>
+        <button (click)="closeIconPicker()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <iconify-icon icon="lucide:x" class="text-lg text-gray-400"></iconify-icon>
+        </button>
+      </div>
+      <div class="p-4 grid grid-cols-5 gap-2 max-h-72 overflow-y-auto">
+        <button
+          *ngFor="let icon of allIcons"
+          (click)="selectIcon(icon)"
+          class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 text-gray-500 transition-colors"
+          [title]="icon.label"
+        >
+          <iconify-icon [icon]="icon.icon" class="text-2xl"></iconify-icon>
+          <span class="text-[10px] text-center leading-tight truncate w-full">{{ icon.label }}</span>
         </button>
       </div>
     </div>
@@ -344,6 +374,14 @@
 
               <!-- Режим редактирования -->
               <ng-container *ngIf="editTypeId === type.id">
+                <!-- Иконка с возможностью смены в режиме редактирования -->
+                <button
+                  (click)="openIconPicker(type.id, false, true)"
+                  class="w-9 h-9 flex items-center justify-center text-indigo-500 border border-indigo-200 bg-white hover:bg-indigo-50 rounded-lg transition-colors shrink-0"
+                  title="Сменить иконку"
+                >
+                  <iconify-icon [icon]="getIconById(editTypeIconId)" class="text-lg"></iconify-icon>
+                </button>
                 <input [(ngModel)]="editTypeName" type="text" class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400" />
                 <button (click)="saveEditType(type)" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:opacity-90">Сохранить</button>
                 <button (click)="cancelEditType()" class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200">Отмена</button>
@@ -351,6 +389,14 @@
 
               <!-- Режим просмотра -->
               <ng-container *ngIf="editTypeId !== type.id">
+                <!-- Иконка типа — кликабельна для быстрой смены -->
+                <button
+                  (click)="openIconPicker(type.id, false, false)"
+                  class="w-9 h-9 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors shrink-0"
+                  title="Сменить иконку"
+                >
+                  <iconify-icon [icon]="getIconById(type.iconId)" class="text-lg"></iconify-icon>
+                </button>
                 <span class="flex-1 text-sm font-medium text-gray-900">{{ type.name }}</span>
                 <button
                   (click)="startEditType(type)"
@@ -379,7 +425,16 @@
             <p *ngIf="resourceTypes.length === 0" class="text-sm text-gray-400 text-center py-2">Нет типов ресурсов</p>
           </div>
 
+          <!-- Добавление нового типа -->
           <div class="flex gap-2">
+            <!-- Иконка для нового типа -->
+            <button
+              (click)="openIconPicker(null, true, false)"
+              class="w-11 h-11 flex items-center justify-center text-indigo-500 border border-gray-200 bg-gray-50 hover:bg-indigo-50 hover:border-indigo-300 rounded-lg transition-colors shrink-0"
+              title="Выбрать иконку"
+            >
+              <iconify-icon [icon]="getIconById(newTypeIconId)" class="text-lg"></iconify-icon>
+            </button>
             <input [(ngModel)]="newTypeName" type="text" placeholder="Название нового типа" class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-400" (keyup.enter)="addResourceType()" />
             <button (click)="addResourceType()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:opacity-90 text-white font-bold rounded-lg transition-opacity whitespace-nowrap">
               <iconify-icon icon="lucide:plus" class="text-lg"></iconify-icon>
@@ -401,7 +456,7 @@
           >
             <div class="flex items-start justify-between mb-3">
               <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                <iconify-icon icon="lucide:box" class="text-xl"></iconify-icon>
+                <iconify-icon [icon]="getTypeIcon(resource.type_id)" class="text-xl"></iconify-icon>
               </div>
               <div class="flex gap-1">
                 <button (click)="$event.stopPropagation(); openEditResource(resource)" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
@@ -468,12 +523,10 @@
               <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-sm font-bold text-amber-700 shrink-0">
                 {{ req.username.slice(0, 2).toUpperCase() }}
               </div>
-
               <div class="flex-1 min-w-0">
                 <p class="font-semibold text-gray-900">{{ req.username }}</p>
                 <p class="text-xs text-gray-400">Подал заявку {{ formatDate(req.createdAt) }}</p>
               </div>
-
               <div class="flex items-center gap-2 shrink-0">
                 <button
                   (click)="approveRequest(req)"
