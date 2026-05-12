@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CompanySettings } from './booking.service';
-import { Me } from './auth.service';
 import { Resource } from './resource.service';
+import { environment } from '../../../environments/environment';
 
 export interface CompanyUser {
   id: number;
@@ -16,6 +16,7 @@ export interface CompanyUser {
 export interface ResourceType {
   id: number;
   name: string;
+  iconId: number | null;
 }
 
 export interface JoinRequest {
@@ -30,7 +31,7 @@ export interface JoinRequest {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
 
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 
@@ -87,8 +88,8 @@ export class AdminService {
     return this.http.post<ResourceType>(`${this.apiUrl}/resource_types/addResourceType`, { name, companyId });
   }
 
-  updateResourceType(id: number, name: string) {
-    return this.http.put<ResourceType>(`${this.apiUrl}/resource_types/update`, { id, name });
+  updateResourceType(id: number, name: string, iconId?: number | null) {
+    return this.http.put<ResourceType>(`${this.apiUrl}/resource_types/update`, { id, name, iconId });
   }
 
   deleteResourceType(id: number) {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface Resource {
   id: number;
@@ -13,7 +14,7 @@ export interface Resource {
 @Injectable({ providedIn: 'root' })
 export class ResourceService {
 
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 

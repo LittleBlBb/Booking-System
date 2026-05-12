@@ -7,6 +7,7 @@ import { AuthService, Me } from '../../core/services/auth.service';
 import { AdminService, CompanyUser, ResourceType, JoinRequest } from '../../core/services/admin.service';
 import { ResourceService, Resource } from '../../core/services/resource.service';
 import { CompanySettings } from '../../core/services/booking.service';
+import { RESOURCE_ICONS, IconOption, getIconById } from '../../core/utils/icons';
 
 type Tab = 'settings' | 'resources' | 'users';
 type BannerType = 'success' | 'error' | null;
@@ -48,6 +49,13 @@ export class AdminComponent implements OnInit {
   newTypeName = '';
   editTypeId: number | null = null;
   editTypeName = '';
+  editTypeIconId: number | null = null;
+  newTypeIconId: number | null = null;
+
+  // --- Icon picker ---
+  showIconPicker = false;
+  iconPickerTarget: { typeId: number | null; isNew: boolean; isEdit: boolean } | null = null;
+  allIcons: IconOption[] = RESOURCE_ICONS;
 
   // --- Resources ---
   resources: Resource[] = [];
@@ -102,6 +110,62 @@ export class AdminComponent implements OnInit {
     if (tab === 'resources' && this.resources.length === 0) this.loadResources();
   }
 
+  // ---------------- ICON HELPERS ----------------
+
+  getIconById(id: number | null | undefined): string {
+    return getIconById(id);
+  }
+
+  getTypeIcon(typeId: number): string {
+    const type = this.resourceTypes.find(t => t.id === typeId);
+    return getIconById(type?.iconId);
+  }
+
+  openIconPicker(typeId: number | null, isNew: boolean, isEdit: boolean) {
+    this.iconPickerTarget = { typeId, isNew, isEdit };
+    this.showIconPicker = true;
+  }
+
+  selectIcon(icon: IconOption) {
+    if (!this.iconPickerTarget) return;
+    const { typeId, isNew, isEdit } = this.iconPickerTarget;
+
+    if (isNew) {
+      this.newTypeIconId = icon.id;
+    } else if (isEdit) {
+      this.editTypeIconId = icon.id;
+    } else if (typeId !== null) {
+      // Быстрая смена иконки без входа в режим редактирования
+      const type = this.resourceTypes.find(t => t.id === typeId);
+      if (type) {
+        this.adminService.updateResourceType(type.id, type.name, icon.id).subscribe({
+          next: (updated) => {
+            const idx = this.resourceTypes.findIndex(t => t.id === typeId);
+            if (idx !== -1) this.resourceTypes[idx] = updated;
+            this.cdr.detectChanges();
+            this.setBanner('Иконка обновлена', 'success');
+          },
+          error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
+        });
+      }
+    }
+
+    this.showIconPicker = false;
+    this.iconPickerTarget = null;
+  }
+
+  closeIconPicker() {
+    this.showIconPicker = false;
+    this.iconPickerTarget = null;
+  }
+
+  companyAvatar(name: string | null | undefined): string {
+    if (!name) return '?';
+    const words = name.trim().split(/\s+/);
+    if (words.length >= 2) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  }
+
   // ---------------- SETTINGS ----------------
 
   loadSettings() {
@@ -128,22 +192,10 @@ export class AdminComponent implements OnInit {
       workStart: this.settingsForm.workStart + ':00',
       workEnd: this.settingsForm.workEnd + ':00'
     };
-
-    const req = this.settingsExist
-      ? this.adminService.updateSettings(body)
-      : this.adminService.createSettings(body);
-
+    const req = this.settingsExist ? this.adminService.updateSettings(body) : this.adminService.createSettings(body);
     req.subscribe({
-      next: (s) => {
-        this.settings = s;
-        this.settingsExist = true;
-        this.settingsSaving = false;
-        this.setBanner('Настройки сохранены', 'success');
-      },
-      error: (err: HttpErrorResponse) => {
-        this.settingsSaving = false;
-        this.setBanner(err.error?.message || 'Ошибка при сохранении', 'error');
-      }
+      next: (s) => { this.settings = s; this.settingsExist = true; this.settingsSaving = false; this.setBanner('Настройки сохранены', 'success'); },
+      error: (err: HttpErrorResponse) => { this.settingsSaving = false; this.setBanner(err.error?.message || 'Ошибка при сохранении', 'error'); }
     });
   }
 
@@ -170,11 +222,7 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  openRemoveUserModal(user: CompanyUser) {
-    this.removeUserTarget = user;
-    this.showRemoveUserModal = true;
-  }
-
+  openRemoveUserModal(user: CompanyUser) { this.removeUserTarget = user; this.showRemoveUserModal = true; }
   closeRemoveUserModal() { this.showRemoveUserModal = false; this.removeUserTarget = null; }
 
   confirmRemoveUser() {
@@ -183,20 +231,12 @@ export class AdminComponent implements OnInit {
     this.closeRemoveUserModal();
     this.closeViewUserModal();
     this.adminService.removeUserFromCompany(id).subscribe({
-      next: () => {
-        this.users = this.users.filter(u => u.id !== id);
-        this.setBanner('Пользователь удалён из компании', 'success');
-        this.cdr.detectChanges();
-      },
+      next: () => { this.users = this.users.filter(u => u.id !== id); this.setBanner('Пользователь удалён из компании', 'success'); this.cdr.detectChanges(); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
-  openViewUserModal(user: CompanyUser) {
-    this.viewUserTarget = user;
-    this.showViewUserModal = true;
-  }
-
+  openViewUserModal(user: CompanyUser) { this.viewUserTarget = user; this.showViewUserModal = true; }
   closeViewUserModal() { this.showViewUserModal = false; this.viewUserTarget = null; }
 
   isSelf(user: CompanyUser): boolean { return user.id === this.me?.id; }
@@ -214,9 +254,7 @@ export class AdminComponent implements OnInit {
     return myRank > theirRank;
   }
 
-  get isOwner(): boolean {
-    return this.normalizeRole(this.me?.role) === 'OWNER';
-  }
+  get isOwner(): boolean { return this.normalizeRole(this.me?.role) === 'OWNER'; }
 
   // ---------------- JOIN REQUESTS ----------------
 
@@ -230,22 +268,14 @@ export class AdminComponent implements OnInit {
 
   approveRequest(request: JoinRequest) {
     this.adminService.approveJoinRequest(request.id).subscribe({
-      next: () => {
-        this.joinRequests = this.joinRequests.filter(r => r.id !== request.id);
-        this.users = [];
-        this.loadUsers();
-        this.setBanner('Запрос одобрен — пользователь добавлен в компанию', 'success');
-      },
+      next: () => { this.joinRequests = this.joinRequests.filter(r => r.id !== request.id); this.users = []; this.loadUsers(); this.setBanner('Запрос одобрен', 'success'); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
   rejectRequest(request: JoinRequest) {
     this.adminService.rejectJoinRequest(request.id).subscribe({
-      next: () => {
-        this.joinRequests = this.joinRequests.filter(r => r.id !== request.id);
-        this.setBanner('Запрос отклонён', 'success');
-      },
+      next: () => { this.joinRequests = this.joinRequests.filter(r => r.id !== request.id); this.setBanner('Запрос отклонён', 'success'); this.cdr.detectChanges(); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
@@ -266,17 +296,33 @@ export class AdminComponent implements OnInit {
   addResourceType() {
     if (!this.newTypeName.trim() || !this.me?.companyId) return;
     this.adminService.createResourceType(this.newTypeName.trim(), this.me.companyId).subscribe({
-      next: (t) => { this.resourceTypes.push(t); this.newTypeName = ''; this.setBanner('Тип добавлен', 'success'); this.cdr.detectChanges(); },
+      next: (t) => {
+        if (this.newTypeIconId) {
+          this.adminService.updateResourceType(t.id, t.name, this.newTypeIconId).subscribe({
+            next: (updated) => { this.resourceTypes.push(updated); this.newTypeName = ''; this.newTypeIconId = null; this.cdr.detectChanges(); this.setBanner('Тип добавлен', 'success'); }
+          });
+        } else {
+          this.resourceTypes.push(t);
+          this.newTypeName = '';
+          this.cdr.detectChanges();
+          this.setBanner('Тип добавлен', 'success');
+        }
+      },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
-  startEditType(type: ResourceType) { this.editTypeId = type.id; this.editTypeName = type.name; }
-  cancelEditType() { this.editTypeId = null; this.editTypeName = ''; }
+  startEditType(type: ResourceType) {
+    this.editTypeId = type.id;
+    this.editTypeName = type.name;
+    this.editTypeIconId = type.iconId;
+  }
+
+  cancelEditType() { this.editTypeId = null; this.editTypeName = ''; this.editTypeIconId = null; }
 
   saveEditType(type: ResourceType) {
     if (!this.editTypeName.trim()) return;
-    this.adminService.updateResourceType(type.id, this.editTypeName.trim()).subscribe({
+    this.adminService.updateResourceType(type.id, this.editTypeName.trim(), this.editTypeIconId).subscribe({
       next: (updated) => {
         const idx = this.resourceTypes.findIndex(t => t.id === type.id);
         if (idx !== -1) this.resourceTypes[idx] = updated;
@@ -290,11 +336,7 @@ export class AdminComponent implements OnInit {
 
   deleteResourceType(type: ResourceType) {
     this.adminService.deleteResourceType(type.id).subscribe({
-      next: () => {
-        this.resourceTypes = this.resourceTypes.filter(t => t.id !== type.id);
-        this.setBanner('Тип удалён', 'success');
-        this.cdr.detectChanges();
-      },
+      next: () => { this.resourceTypes = this.resourceTypes.filter(t => t.id !== type.id); this.setBanner('Тип удалён', 'success'); this.cdr.detectChanges(); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
@@ -372,20 +414,12 @@ export class AdminComponent implements OnInit {
     this.closeDeleteResource();
     this.closeViewResourceModal();
     this.adminService.deleteResource(id).subscribe({
-      next: () => {
-        this.resources = this.resources.filter(r => r.id !== id);
-        this.setBanner('Ресурс удалён', 'success');
-        this.cdr.detectChanges();
-      },
+      next: () => { this.resources = this.resources.filter(r => r.id !== id); this.setBanner('Ресурс удалён', 'success'); this.cdr.detectChanges(); },
       error: (err: HttpErrorResponse) => this.setBanner(err.error?.message || 'Ошибка', 'error')
     });
   }
 
-  openViewResourceModal(resource: Resource) {
-    this.viewResourceTarget = resource;
-    this.showViewResourceModal = true;
-  }
-
+  openViewResourceModal(resource: Resource) { this.viewResourceTarget = resource; this.showViewResourceModal = true; }
   closeViewResourceModal() { this.showViewResourceModal = false; this.viewResourceTarget = null; }
 
   openDeleteFromView(resource: Resource) {
@@ -406,16 +440,8 @@ export class AdminComponent implements OnInit {
     if (!this.me?.companyId) return;
     this.deletingCompany = true;
     this.adminService.deleteCompany(this.me.companyId).subscribe({
-      next: () => {
-        this.deletingCompany = false;
-        this.authService.logout();
-        this.router.navigate(['/auth']);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.deletingCompany = false;
-        this.closeDeleteCompanyModal();
-        this.setBanner(err.error?.message || 'Ошибка при удалении компании', 'error');
-      }
+      next: () => { this.deletingCompany = false; this.authService.logout(); this.router.navigate(['/auth']); },
+      error: (err: HttpErrorResponse) => { this.deletingCompany = false; this.closeDeleteCompanyModal(); this.setBanner(err.error?.message || 'Ошибка при удалении компании', 'error'); }
     });
   }
 

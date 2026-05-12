@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface CompanySettings {
   companyId: number;
@@ -12,11 +13,12 @@ export interface CompanySettings {
 
 @Injectable({ providedIn: 'root' })
 export class CompanySettingsService {
-  private base = 'http://localhost:8080/api/company_settings';
+
+  private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 
   getSettings(): Observable<CompanySettings> {
-    return this.http.get<CompanySettings>(`${this.base}/getCompanySettings`);
+    return this.http.get<CompanySettings>(`${this.apiUrl}/company_settings/getCompanySettings`);
   }
 }

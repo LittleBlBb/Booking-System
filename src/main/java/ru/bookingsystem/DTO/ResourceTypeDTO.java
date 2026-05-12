@@ -9,11 +9,13 @@ import ru.bookingsystem.entity.ResourceType;
 public class ResourceTypeDTO {
 
     private Long id;
+    private Integer iconId;
     private String name;
 
     public ResourceTypeDTO(ResourceType resourceType){
 
         this.id = resourceType.getId();
+        this.iconId = resourceType.getIconId();
         this.name = resourceType.getName();
     }
 }

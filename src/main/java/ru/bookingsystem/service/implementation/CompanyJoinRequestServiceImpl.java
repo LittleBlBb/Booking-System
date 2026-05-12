@@ -131,7 +131,7 @@ public class CompanyJoinRequestServiceImpl implements CompanyJoinRequestService 
         User user = userRepo.findByUsername(name).orElseThrow(() ->
                 new NotFoundException("User " + name + " not found"));
 
-        if (!user.getRole().equals(Role.ADMIN)){
+        if (user.getRole().equals(Role.USER)){
             throw new NoPermissionException();
         }
 

@@ -9,12 +9,16 @@ import ru.bookingsystem.DTO.UserResponseDTO;
 import ru.bookingsystem.DTO.requests.CompanyCreateRequest;
 import ru.bookingsystem.DTO.requests.CompanyUpdateRequest;
 import ru.bookingsystem.entity.Company;
+import ru.bookingsystem.entity.CompanyJoinRequest;
+import ru.bookingsystem.entity.ResourceType;
 import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.AlreadyInCompanyException;
 import ru.bookingsystem.exception.NotFoundException;
 import ru.bookingsystem.exception.NotOwnerException;
+import ru.bookingsystem.repository.CompanyJoinRequestRepo;
 import ru.bookingsystem.repository.CompanyRepo;
+import ru.bookingsystem.repository.ResourceTypeRepo;
 import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.service.interfaces.CompanyService;
 
@@ -26,6 +30,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepo companyRepo;
     private final UserRepo userRepo;
+    private final ResourceTypeRepo resourceTypeRepo;
+    private final CompanyJoinRequestRepo companyJoinRequestRepo;
 
     @Override
     @Transactional
@@ -108,6 +114,12 @@ public class CompanyServiceImpl implements CompanyService {
             u.setRole(Role.USER);
         }
         userRepo.saveAll(users);
+
+        List<ResourceType> types = resourceTypeRepo.findAllByCompanyId(id);
+        resourceTypeRepo.deleteAll(types);
+
+        List<CompanyJoinRequest> companyJoinRequests = companyJoinRequestRepo.findAllByCompanyId(id);
+        companyJoinRequestRepo.deleteAll(companyJoinRequests);
 
         companyRepo.deleteById(id);
     }

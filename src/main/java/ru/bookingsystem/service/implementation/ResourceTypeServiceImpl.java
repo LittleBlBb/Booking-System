@@ -76,6 +76,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
         ResourceType resourceType = resourceTypeRepo.findById(request.getId()).orElseThrow(() ->
                 new NotFoundException("resource type with id " + request.getId() + " not found"));
 
+        resourceType.setIconId(request.getIconId());
         resourceType.setName(request.getName());
 
         return new ResourceTypeDTO(resourceTypeRepo.save(resourceType));

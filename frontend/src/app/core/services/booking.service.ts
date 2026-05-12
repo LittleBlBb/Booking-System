@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface CompanySettings {
   companyId: number | null;
@@ -35,7 +36,7 @@ export interface CreateBookingRequest {
 @Injectable({ providedIn: 'root' })
 export class BookingService {
 
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 

@@ -13,6 +13,7 @@ import ru.bookingsystem.entity.User;
 import ru.bookingsystem.entity.constant.Role;
 import ru.bookingsystem.exception.AlreadyExistsException;
 import ru.bookingsystem.exception.UserNotActivatedException;
+import ru.bookingsystem.repository.UserRepo;
 import ru.bookingsystem.service.interfaces.AuthService;
 import ru.bookingsystem.service.interfaces.UserService;
 import ru.bookingsystem.util.CustomUserDetails;
@@ -26,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final UserRepo userRepo;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final MailSenderServiceImpl mailSenderService;
@@ -35,7 +37,9 @@ public class AuthServiceImpl implements AuthService {
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
 
-        User user = userService.findByUsername(request.getLogin());
+        User user = userRepo.findByEmail(request.getLogin().toLowerCase());
+
+        if (user == null) user = userService.findByUsername(request.getLogin().toLowerCase());
 
         if (!user.getActive()) throw new UserNotActivatedException("Please check your email to active account");
 
@@ -53,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("Passwords are not equals");
         }
 
-        if (userService.existsByUsername(request.getUsername())){
+        if (userService.existsByUsername(request.getUsername().toLowerCase())){
             throw new AlreadyExistsException("User " + request.getUsername() + " already exists");
         }
 
@@ -61,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
             throw new NullPointerException("Email required");
         }
 
-        if (userService.existsByEmail(request.getEmail())){
+        if (userService.existsByEmail(request.getEmail().toLowerCase())){
             throw new AlreadyExistsException("Email " + request.getEmail() + " already in use");
         }
 

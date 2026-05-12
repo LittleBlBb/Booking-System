@@ -22,6 +22,9 @@ public class ResourceType {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "icon_id")
+    private Integer iconId;
+
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
